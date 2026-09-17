@@ -1,5 +1,7 @@
 # AThread
 
+[中文](README.zh.md) | English
+
 **A Linux runtime for massive concurrent AI agent sessions.**
 
 Run hundreds of AI agent sessions on ordinary Linux without changing the agents.
@@ -877,6 +879,55 @@ end-to-end in [experiments/REPORT.md](experiments/REPORT.md) round 6:
 `python -m unittest discover` 4.8x faster (33.7ms -> 7.0ms), heavy-import
 `python -c` 3.4x, zero regression on native tools, correct fallback under
 `VIRTUAL_ENV`/`PYTHONPATH`.
+
+### Quick start
+
+```bash
+git clone <repo-url> && cd AThread
+
+./athread/athread install    # compile the shim into ~/.athread/bin
+./athread/athread start      # launch the athreadd daemon (warm CPython root)
+./athread/athread status     # check daemon health
+
+# transparent interception for anything that runs `python` on PATH
+export PATH="$HOME/.athread/bin:$PATH"
+export ATHREAD_SOCK="$HOME/.athread/athreadd.sock"
+export ATHREAD_REAL_PYTHON="/usr/bin/python3"
+
+python3 -m unittest discover -s tests   # 33.7ms -> 7.0ms (4.8x)
+```
+
+Anything AThread does not recognize (`VIRTUAL_ENV`, `PYTHONPATH`, unknown
+flags, daemon unreachable) falls back to normal `execve` — agents never break.
+Warm modules are configurable in `~/.athread/warm_modules.txt`. See
+[athread/README.md](athread/README.md) for full semantics, caveats
+(`PYTHONHASHSEED=0`, single-threaded warm root) and other commands
+(`stop`, `doctor`).
+
+### Measured benefits
+
+All numbers measured on this machine (WSL2, 20 cores). Full methodology and
+raw data: [experiments/REPORT.md](experiments/REPORT.md).
+
+| Workload | Baseline | AThread | Speedup |
+|---|---|---|---|
+| `python -m unittest discover` (test loop) | 33.7 ms | 7.0 ms | **4.8x** |
+| `python -c` heavy imports | 21.5 ms | 6.2 ms | **3.4x** |
+| Real command replay: `python -m unittest discover` | 64.2 ms | 3.1 ms | **21x** |
+| 30 sparse sessions, python p50 | 22.5 ms | 6.8 ms | 3.3x |
+| 30 sparse sessions, unittest p50 | 34.4 ms | 7.8 ms | 4.4x |
+| git / rg / cat (native tools) | unchanged | unchanged | no regression |
+
+| Memory | Baseline | AThread | Saving |
+|---|---|---|---|
+| 20 concurrent python processes | 78 MB | 50 MB | **-36%** |
+| 25 warm-fork sessions, PSS upper bound | 161.6 MB | 17.1 MB | **-89%** |
+| Same, after realistic per-session dirtying | — | — | **~90% retained** |
+
+Key negative results that shaped the design: PTY overhead (~0.5 MB/session)
+and memory/IO pressure are negligible on modern WSL2; containers are an
+orthogonal layer and do not eliminate duplicated runtime init. Details in
+[experiments/REPORT.md](experiments/REPORT.md).
 
 ---
 
