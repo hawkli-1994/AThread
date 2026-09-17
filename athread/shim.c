@@ -23,7 +23,9 @@
 #include <time.h>
 
 #define MAX_ENV (1 << 20)
-#define MAX_ARGV 256
+// MAX_ARGV is a protocol sanity bound only; exceeding it falls back to the
+// real interpreter rather than silently truncating argv.
+#define MAX_ARGV 4096
 
 static const char *REAL_PYTHON = "/usr/bin/python3";
 static const char *SOCK_PATH = NULL;
@@ -78,13 +80,17 @@ int main(int argc, char **argv) {
 
     int fd = socket(AF_UNIX, SOCK_STREAM, 0);
     if (fd < 0) exec_real(argc, argv);
+    // 2s timeout for connect only; after spawn the daemon answers exactly
+    // when the child exits, which may be arbitrarily far in the future.
     struct timeval tv = {2, 0};
-    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
     setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
     struct sockaddr_un sa = {0};
     sa.sun_family = AF_UNIX;
     snprintf(sa.sun_path, sizeof sa.sun_path, "%s", SOCK_PATH);
     if (connect(fd, (struct sockaddr *)&sa, sizeof sa) < 0)
+        exec_real(argc, argv);
+
+    if (argc > MAX_ARGV)                         // never truncate argv
         exec_real(argc, argv);
 
     // build request: {"cmd":"run","argv":[...],"env":[...],"cwd":"..."}
@@ -120,6 +126,8 @@ int main(int argc, char **argv) {
     // send file + fds 0,1,2 in one message
     off_t len = lseek(tfd, 0, SEEK_END);
     lseek(tfd, 0, SEEK_SET);
+    if (len < 0 || len >= 60000)                // oversized request -> fallback
+        exec_real(argc, argv);
     char buf[65536];
     ssize_t n = read(tfd, buf, sizeof buf - 1);
     close(tfd);
