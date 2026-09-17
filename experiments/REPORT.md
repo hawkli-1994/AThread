@@ -422,3 +422,48 @@ python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms。**勘�
 2. **定位按审阅建议收窄**：当前有数据支撑的定位是"面向高频、短时、重 import 工作负载的 Python 预热执行器"；扩展回"Agent Runtime"需要先用门槛实验验证（见下）。
 3. **继续投入的门槛**（采纳审阅建议，预先设定）：目标场景每成功任务 CPU 降低 ≥15%，或固定延迟约束下吞吐提高 ≥20%，且结果等价、错误率不增加。当前：CPU -10%（未达线），单命令延迟与内存达标——下一步优先提升 python 调用密度场景（测试循环型任务）的端到端测量。
 4. **已撤回的 headline**：21x、5.3x、-36%、-89%、585 execs、容器 17.2MB。本报告所有在册数字以本轮及以后为准。
+
+---
+
+# 第八轮（2026-09-17）：Issue #1 —— P0 实验硬化与真实重测
+
+Issue #1 要求"在扩大 Node/共享索引/调度之前，先完成一轮可复现实验，回答哪些编码 Agent 负载值得复用 Python 初始化状态"。本轮完成 P0（实验与等价校验硬化），并重测了第七轮的轨迹 A/B。
+
+## P0-1 差分测试补强（`athread/parity_test.py`，33/33 通过）
+
+- 修复同目录导入 fixture（原先 helper 与 main 不同目录、两边同样失败也算通过——现在断言成功且输出 99）
+- 新增用例：atexit 回调里 import 脚本目录模块、非 daemon 线程副作用完成、保留引用的缓冲写（验证最终文件内容）、孙进程、**100KB 环境变量**、64KB stdout
+- 100KB env 用例抓到一个真实 bug：shim 把**所有** `ATHREAD_*` 前缀的用户环境变量都剥掉了，改为只剥 shim 自己消费的两个（`ATHREAD_SOCK`/`ATHREAD_REAL_PYTHON`）
+
+## P0-2 exp12 修复
+
+- `--session` worker 调度移到任何实验代码之前（此前每个 30 会话 worker 都会把 S1/S2 重跑一遍，污染计时）
+- S1/S2 等价比较加入**事先声明的归一化**（unittest "in X.XXs" 计时行）；S3 记录 rc 并跨模式比较
+- **fast path 命中验证**：用 daemon `served` 计数器证明 S3 的 278 次 python 调用全部走了 fast path（无静默回退）
+- v3 结果：S1 4.7x / S2 3.4x，输出+rc 等价，278/278 fast path
+
+## P0-3 replay_real 副作用检查升级为内容等价（原来只是"有无新文件"布尔值）
+
+## P0-4/P0-5 exp15：取代 exp14 的硬化版固定轨迹 A/B
+
+按 Issue #1 P0 要求逐条实现：冻结输入（workspace=fixture 提交件的新鲜副本，无旧宿主机路径依赖）；cold-first 分类（ok / 预期测试失败 / 失败，不只看退出码是否相同）；原始思考节奏（不再截断 1500ms——代价是 codex 会话忠实重放需 ~11.5 分钟/模式）；稳定 cmd_id 按 ID 配对；**stderr + 会话终态文件树（sha256）全部纳入等价比较**；动态字段归一化规则事先声明（沙箱路径/ISO 时间/HH:MM:SS/epoch/unittest 计时行/tmp 路径；env 类命令按键集+PATH 集合比较并声明剔除 harness 注入变量）；CPU 用 per-command `wait4` rusage 求和（不再用全机 /proc/stat）；原始节奏与压力回放分离报告。
+
+**过程中修掉的 harness bug**：cat 2000 文件管道死锁（改临时文件）、stdin 继承导致 cat 型命令阻塞（改 /dev/null）、tree 存 bytes 无法 JSON 化（改 sha256）、`NORM(s, "")` 空串 replace 把 "<WS>" 插进每个字符间破坏了日期归一化。
+
+### exp15 结果（原始节奏，489 对配对命令）
+
+| 维度 | 结果 |
+|---|---|
+| 覆盖率 | 489 执行 / 23 不可恢复（node×10、npm×4 超出 v0.1 范围；/tmp 脚本×8、stdin×1 内容丢失），两模式跳过集合完全一致（mismatch 0） |
+| 主机状态探针 | 35 条声明排除（date×26 时钟输出、env×8 内省、which×1 PATH 依赖）——它们内省的是活宿主状态，两次运行不可能一致，与 AThread 无关 |
+| **等价性** | **450/450 可回放沙箱命令在声明归一化后逐字节等价**（454 配对中 4 条例外：2 条 rg 指向真实共享仓库（wrongcwd 病理会话）、1 条 `ls -la`（`..` 活时间戳）、1 条 pytest——见下） |
+| 抓到的真实语义 bug | `python -m <缺失模块>`：冷启动打一行纯文本，warm 打完整 traceback（runpy 在 3.14 抛无 `.name` 的裸 ImportError）。已修复 + parity 锁定 + 定向重放验证一致 |
+| CPU（per-command rusage 求和） | A 1868ms vs B 1874ms（**-0%**）——**撤回 exp14 的"CPU -10%"**（那是全机 /proc/stat，且混入了 workspace 复制） |
+| python 延迟 | p50 41.6→10.8ms（3.9x），n=3（12 条 trace python 中 9 条不可回放，样本小，只作方向性参考） |
+| 会话终态文件树 | 14 个会话全部跨模式一致 |
+
+**结论修正**：第七轮"498 条全 MATCH / CPU -10%"的表述撤下。严格口径下的支持结论是：**在可回放的沙箱作用域命令上，fast path 与冷启动逐字节等价（含 stderr 与文件树）；该轨迹上可回放的 python 命令 3.9x，轨迹级 CPU 差异为 0**。收益上限仍在 python 密集任务——这正是 P1 实验 A 要采集的。
+
+## P1 实验 A（进行中）：python 密集任务的真实 trace 采集
+
+任务设计：修复 bugrepo 中 2 个失败测试直到 unittest 全过（测试循环型负载），3 个 agent（Claude Code 2.1.270 / Kimi CLI 0.43.1 / Codex CLI）各跑一遍，原子 trace shim 记录全部工具调用。结果待采集完成后补入。

@@ -880,9 +880,11 @@ fork broker) plus a transparent PATH shim with fail-open fallback. Held to a
 differential standard by [athread/parity_test.py](athread/parity_test.py)
 (24 cases asserting rc/stdout/stderr/side-effects identical to cold CPython).
 Measured end-to-end: `python -m unittest discover` 4.8x faster (34.2ms ->
-7.1ms), heavy-import `python -c` 3.6x, real-trace python p50 7.5x, total CPU
--10%, zero regression on native tools, correct fallback under
-`VIRTUAL_ENV`/`PYTHONPATH`.
+7.1ms), heavy-import `python -c` 3.6x, real-trace python p50 3.9x (exp15,
+sandbox-scoped), zero divergence on 450 replayable trace commands, correct
+fallback under `VIRTUAL_ENV`/`PYTHONPATH`. (Earlier 'CPU -10%' and
+'498 all-MATCH' claims were retracted in round 8: whole-machine CPU
+accounting and incomplete equivalence coverage.)
 
 ### Quick start
 
@@ -918,9 +920,9 @@ raw data: [experiments/REPORT.md](experiments/REPORT.md).
 | `python -m unittest discover` (test loop) | 34.2 ms | 7.1 ms | **4.8x** |
 | `python -c` heavy imports | 21.2 ms | 6.0 ms | **3.6x** |
 | Real-trace replay (equiv-checked): unittest discover | 33.7 ms | 7.8 ms | **4.3x** |
-| Real-trace A/B: python p50 over 498 replayed cmds | 70.4 ms | 9.4 ms | **7.5x** |
+| Real-trace replay (sandbox-scoped, exp15): python p50 | 41.6 ms | 10.8 ms | **3.9x** (n=3 replayable) |
 | 30 sparse sessions, python / unittest p50 | 22.2 / 34.9 ms | 6.9 / 7.9 ms | 3.2x / 4.4x |
-| Real-trace A/B: total CPU, native tools | — | -10%, p50/p95 identical | no regression |
+| Real-trace replay (exp15): 450 sandbox-scoped cmds | — | byte-identical (stderr+file trees) | zero divergence |
 
 | Memory (full process group, incl. daemon) | Baseline | AThread | Saving |
 |---|---|---|---|
@@ -929,8 +931,9 @@ raw data: [experiments/REPORT.md](experiments/REPORT.md).
 | Docker containers (10x python, docker stats) | — | 12.4 MB/instance | worse than bare metal |
 
 All rows verified for **output equivalence** (rc/stdout/stderr byte-identical
-to cold python; 24-case differential suite `athread/parity_test.py` plus
-498-command trace replay, all MATCH). Hit rate on real agent traces: 92% of
+to cold python; 33-case differential suite `athread/parity_test.py` plus
+exp15: 450/450 replayable sandbox-scoped trace commands byte-identical
+after declared normalization). Hit rate on real agent traces: 92% of
 python calls are shim-eligible, but python is only 2.4% of invocations in
 repo-analysis tasks — the benefit density is task-type dependent. Earlier
 headlines (21x replay, -36%/-89% memory, 585 execs) were **retracted** after

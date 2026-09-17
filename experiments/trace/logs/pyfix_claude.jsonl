@@ -1,0 +1,56 @@
+{"ev":"start","ts":1789656284977307150,"pid":1997829,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997829,"ts":1789656284979824130,"dur_ms":2.509,"rc":0}
+{"ev":"start","ts":1789656285157893994,"pid":1997878,"bin":"git","argv":["git","-c","core.hooksPath=/dev/null","-c","core.fsmonitor=","-C","/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","ls-files","--error-unmatch","--",":(icase).claude/settings.local.json"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997878,"ts":1789656285158852953,"dur_ms":0.955,"rc":1}
+{"ev":"start","ts":1789656285163257269,"pid":1997881,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","-c","core.hooksPath=/dev/null","-c","core.fsmonitor=","remote","get-url","origin"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997881,"ts":1789656285164353955,"dur_ms":1.092,"rc":2}
+{"ev":"start","ts":1789656285169935016,"pid":1997883,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","-c","core.hooksPath=/dev/null","-c","core.fsmonitor=","remote"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997883,"ts":1789656285170828581,"dur_ms":0.887,"rc":0}
+{"ev":"start","ts":1789656285185729127,"pid":1997888,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.fsmonitor=","-c","core.hooksPath=/dev/null","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","--no-optional-locks","status","--short","--ignore-submodules=dirty"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"start","ts":1789656285186092562,"pid":1997889,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.fsmonitor=","-c","core.hooksPath=/dev/null","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","--no-optional-locks","log","--oneline","-n","5"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"start","ts":1789656285186431060,"pid":1997891,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.fsmonitor=","-c","core.hooksPath=/dev/null","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","config","user.name"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997888,"ts":1789656285187000119,"dur_ms":1.267,"rc":0}
+{"ev":"end","pid":1997889,"ts":1789656285187101451,"dur_ms":1.002,"rc":0}
+{"ev":"end","pid":1997891,"ts":1789656285187188235,"dur_ms":0.753,"rc":0}
+{"ev":"start","ts":1789656287776494390,"pid":1997966,"bin":"env","argv":["env"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997966,"ts":1789656287778556744,"dur_ms":2.059,"rc":0}
+{"ev":"start","ts":1789656287787467639,"pid":1997974,"bin":"grep","argv":["grep","-qs","i"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997974,"ts":1789656287788138520,"dur_ms":0.667,"rc":1}
+{"ev":"start","ts":1789656287790234741,"pid":1997977,"bin":"head","argv":["head","-n","1000"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997977,"ts":1789656287791811975,"dur_ms":1.574,"rc":0}
+{"ev":"start","ts":1789656287792588880,"pid":1997980,"bin":"cut","argv":["cut","-d ","-f3"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"start","ts":1789656287792588552,"pid":1997981,"bin":"grep","argv":["grep","-vE","^_[^_]"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997980,"ts":1789656287794171299,"dur_ms":1.579,"rc":0}
+{"ev":"end","pid":1997981,"ts":1789656287794335894,"dur_ms":1.742,"rc":0}
+{"ev":"start","ts":1789656287796871334,"pid":1997992,"bin":"grep","argv":["grep","on"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"start","ts":1789656287797040738,"pid":1997994,"bin":"head","argv":["head","-n","1000"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997992,"ts":1789656287797595757,"dur_ms":0.721,"rc":0}
+{"ev":"start","ts":1789656287798041306,"pid":1997993,"bin":"awk","argv":["awk","{print \"set -o \" $1}"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997993,"ts":1789656287799632000,"dur_ms":1.585,"rc":0}
+{"ev":"end","pid":1997994,"ts":1789656287799914108,"dur_ms":2.870,"rc":0}
+{"ev":"start","ts":1789656287800700743,"pid":1998000,"bin":"sed","argv":["sed","s/^/alias -- /"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"start","ts":1789656287800722789,"pid":1997999,"bin":"sed","argv":["sed","s/^alias //g"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"start","ts":1789656287800806854,"pid":1998001,"bin":"head","argv":["head","-n","1000"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1997999,"ts":1789656287801478069,"dur_ms":0.752,"rc":0}
+{"ev":"end","pid":1998000,"ts":1789656287801613190,"dur_ms":0.909,"rc":0}
+{"ev":"end","pid":1998001,"ts":1789656287802205590,"dur_ms":1.395,"rc":0}
+{"ev":"start","ts":1789656287802799296,"pid":1998005,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998005,"ts":1789656287804140612,"dur_ms":1.337,"rc":0}
+{"ev":"start","ts":1789656287804683735,"pid":1998007,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998007,"ts":1789656287806076750,"dur_ms":1.389,"rc":0}
+{"ev":"start","ts":1789656287806707362,"pid":1998009,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998009,"ts":1789656287808122539,"dur_ms":1.411,"rc":0}
+{"ev":"start","ts":1789656287808739205,"pid":1998011,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998011,"ts":1789656287810095181,"dur_ms":1.352,"rc":0}
+{"ev":"start","ts":1789656287816871844,"pid":1998016,"bin":"head","argv":["head","-50"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998016,"ts":1789656287821128314,"dur_ms":4.253,"rc":0}
+{"ev":"start","ts":1789656287821643332,"pid":1998026,"bin":"ls","argv":["ls","-la","/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998026,"ts":1789656287823709438,"dur_ms":2.061,"rc":0}
+{"ev":"start","ts":1789656318314170046,"pid":1998534,"bin":"python3","argv":["python3","--version"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998534,"ts":1789656318314863500,"dur_ms":0.690,"rc":0}
+{"ev":"start","ts":1789656342911572542,"pid":1998910,"bin":"ls","argv":["ls","-a","/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude/.claude/"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1998910,"ts":1789656342913434824,"dur_ms":1.858,"rc":2}
+{"ev":"start","ts":1789656365633540397,"pid":1999275,"bin":"ls","argv":["ls","/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude/tests/"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1999275,"ts":1789656365635340160,"dur_ms":1.795,"rc":0}
+{"ev":"start","ts":1789656365635832736,"pid":1999277,"bin":"ls","argv":["ls","/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude/calc/"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_claude","venv":0}
+{"ev":"end","pid":1999277,"ts":1789656365637414305,"dur_ms":1.578,"rc":0}
