@@ -1,0 +1,22 @@
+== exp13: full-process-group memory P&L (N=20 procs, 10 containers, held 12s) ==
+host python: 
+
+A) cold: independent host python processes
+   total PSS  129.5 MB  (6.47 MB/session)   [cleaned=True]
+
+B) warm: athread shim children + FULL daemon PSS
+   total PSS  111.6 MB  (5.58 MB/session)   [shims 4.0 + daemon 5.9 (idle 17.0; CoW sharing dilutes its PSS) + 20 workers 101.7 MB; leftover workers=0]
+
+C) cow-synthetic: warm-root parent + fork children (parent INCLUDED)
+   total PSS   16.5 MB  (0.83 MB/session)   [parent INCLUDED (1.1 MB)]
+
+D) containers: one python per docker container (python + shim processes)
+   10 containers via docker stats (cgroup usage, incl. shim overhead): 124.1 MB total, 12.4 MB/instance
+
+== summary (total PSS including ALL model processes) ==
+   cold   129.5 MB
+   warm   111.6 MB   saving vs cold:   17.9 MB (14%)
+   cow     16.5 MB   saving vs cold:  112.9 MB (87%)
+   containers  124.1 MB for 10 instances (12.4 MB/instance;
+        scaled to 20: ~248 MB — containers ADD per-instance overhead,
+        they do not dedupe runtime init)

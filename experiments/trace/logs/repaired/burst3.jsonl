@@ -1,0 +1,64 @@
+{"ev": "start", "ts": 1789614225602897035, "pid": 1214622, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214622, "ts": 1789614225605305972, "dur_ms": 2.409, "rc": 0}
+{"ev": "start", "ts": 1789614225788615667, "pid": 1214683, "bin": "git", "argv": ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "ls-files", "--error-unmatch", "--", ":(icase).claude/settings.local.json"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214683, "ts": 1789614225789910126, "dur_ms": 1.294, "rc": 1}
+{"ev": "start", "ts": 1789614225796141729, "pid": 1214691, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "remote", "get-url", "origin"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214691, "ts": 1789614225797590517, "dur_ms": 1.449, "rc": 2}
+{"ev": "start", "ts": 1789614225804531167, "pid": 1214696, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "remote"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214696, "ts": 1789614225805767370, "dur_ms": 1.236, "rc": 0}
+{"ev": "start", "ts": 1789614225819998319, "pid": 1214713, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "status", "--short", "--ignore-submodules=dirty"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614225820445778, "pid": 1214715, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "log", "--oneline", "-n", "5"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614225821138003, "pid": 1214721, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "config", "user.name"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214721, "ts": 1789614225822167169, "dur_ms": 1.029, "rc": 0}
+{"ev": "end", "pid": 1214715, "ts": 1789614225822402238, "dur_ms": 1.956, "rc": 0}
+{"ev": "end", "pid": 1214713, "ts": 1789614225833635960, "dur_ms": 13.638, "rc": 0}
+{"ev": "start", "ts": 1789614235577687121, "pid": 1214982, "bin": "env", "argv": ["env"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214982, "ts": 1789614235579765480, "dur_ms": 2.078, "rc": 0}
+{"ev": "start", "ts": 1789614235586488981, "pid": 1214990, "bin": "grep", "argv": ["grep", "-qs", "i"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214990, "ts": 1789614235587145652, "dur_ms": 0.656, "rc": 1}
+{"ev": "start", "ts": 1789614235588185688, "pid": 1214993, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214993, "ts": 1789614235589845469, "dur_ms": 1.66, "rc": 0}
+{"ev": "start", "ts": 1789614235590553496, "pid": 1214996, "bin": "cut", "argv": ["cut", "-d ", "-f3"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614235590589967, "pid": 1214997, "bin": "grep", "argv": ["grep", "-vE", "^_[^_]"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1214996, "ts": 1789614235592198923, "dur_ms": 1.645, "rc": 0}
+{"ev": "end", "pid": 1214997, "ts": 1789614235592367282, "dur_ms": 1.777, "rc": 0}
+{"ev": "start", "ts": 1789614235595258583, "pid": 1215008, "bin": "grep", "argv": ["grep", "on"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614235595439924, "pid": 1215010, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614235595554244, "pid": 1215009, "bin": "awk", "argv": ["awk", "{print \"set -o \" $1}"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215008, "ts": 1789614235595966727, "dur_ms": 0.708, "rc": 0}
+{"ev": "end", "pid": 1215009, "ts": 1789614235596858356, "dur_ms": 1.304, "rc": 0}
+{"ev": "end", "pid": 1215010, "ts": 1789614235597135501, "dur_ms": 1.696, "rc": 0}
+{"ev": "start", "ts": 1789614235598019450, "pid": 1215016, "bin": "sed", "argv": ["sed", "s/^/alias -- /"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614235598057990, "pid": 1215015, "bin": "sed", "argv": ["sed", "s/^alias //g"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614235598130932, "pid": 1215017, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215015, "ts": 1789614235598776750, "dur_ms": 0.719, "rc": 0}
+{"ev": "end", "pid": 1215016, "ts": 1789614235598978730, "dur_ms": 0.959, "rc": 0}
+{"ev": "end", "pid": 1215017, "ts": 1789614235599653800, "dur_ms": 1.523, "rc": 0}
+{"ev": "start", "ts": 1789614235600382653, "pid": 1215021, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215021, "ts": 1789614235601780792, "dur_ms": 1.398, "rc": 0}
+{"ev": "start", "ts": 1789614235602492071, "pid": 1215023, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215023, "ts": 1789614235604026063, "dur_ms": 1.534, "rc": 0}
+{"ev": "start", "ts": 1789614235604730697, "pid": 1215025, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215025, "ts": 1789614235606162299, "dur_ms": 1.431, "rc": 0}
+{"ev": "start", "ts": 1789614235606862952, "pid": 1215027, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215027, "ts": 1789614235608346671, "dur_ms": 1.484, "rc": 0}
+{"ev": "start", "ts": 1789614235615297460, "pid": 1215032, "bin": "head", "argv": ["head", "-5"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "start", "ts": 1789614235615492245, "pid": 1215031, "bin": "ls", "argv": ["ls", "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3/src/module00/"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215031, "ts": 1789614235617473097, "dur_ms": 1.981, "rc": 0}
+{"ev": "end", "pid": 1215032, "ts": 1789614235617483226, "dur_ms": 2.186, "rc": 0}
+{"ev": "start", "ts": 1789614235618062475, "pid": 1215035, "bin": "cat", "argv": ["cat", "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3/src/module00/file000.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215035, "ts": 1789614235619579396, "dur_ms": 1.517, "rc": 0}
+{"ev": "start", "ts": 1789614235620198020, "pid": 1215037, "bin": "cat", "argv": ["cat", "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3/src/module00/file042.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215037, "ts": 1789614235621633406, "dur_ms": 1.435, "rc": 0}
+{"ev": "start", "ts": 1789614256779120718, "pid": 1215487, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215487, "ts": 1789614256780865683, "dur_ms": 1.745, "rc": 0}
+{"ev": "start", "ts": 1789614256781400725, "pid": 1215489, "bin": "python3", "argv": ["python3", "/tmp/check_modules.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215489, "ts": 1789614256846129632, "dur_ms": 64.729, "rc": 0}
+{"ev": "start", "ts": 1789614262065120118, "pid": 1215581, "bin": "git", "argv": ["git", "status", "--porcelain"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215581, "ts": 1789614262076596931, "dur_ms": 11.477, "rc": 0}
+{"ev": "end", "pid": 1215587, "ts": 1789614262081349523, "dur_ms": 3.724, "rc": 0}
+{"ev": "end", "pid": 1215589, "ts": 1789614262081870687, "dur_ms": 4.225, "rc": 0}
+{"ev": "start", "ts": 1789614273482740550, "pid": 1215824, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215824, "ts": 1789614273485804289, "dur_ms": 3.064, "rc": 0}
+{"ev": "start", "ts": 1789614273486691156, "pid": 1215827, "bin": "grep", "argv": ["grep", "-c", "\"ev\":\"start\"", "/home/krli/belllab/AThread/experiments/trace/logs/burst3.jsonl"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3", "venv": 0}
+{"ev": "end", "pid": 1215827, "ts": 1789614273487479591, "dur_ms": 0.788, "rc": 0}

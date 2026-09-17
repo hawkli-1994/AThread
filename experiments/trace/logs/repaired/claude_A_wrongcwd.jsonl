@@ -1,0 +1,111 @@
+{"ev": "start", "ts": 1789609771001086582, "pid": 1132387, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132387, "ts": 1789609771008288388, "dur_ms": 7.202, "rc": 0}
+{"ev": "start", "ts": 1789609771162437891, "pid": 1132427, "bin": "git", "argv": ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "/home/krli/belllab/AThread/experiments/trace", "ls-files", "--error-unmatch", "--", ":(icase).claude/settings.local.json"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132427, "ts": 1789609771163397638, "dur_ms": 0.96, "rc": 1}
+{"ev": "start", "ts": 1789609771164140315, "pid": 1132429, "bin": "git", "argv": ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "/home/krli/belllab/AThread", "ls-files", "--error-unmatch", "--", ":(icase).claude/settings.local.json"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1132429, "ts": 1789609771164961996, "dur_ms": 0.822, "rc": 1}
+{"ev": "start", "ts": 1789609771169576920, "pid": 1132431, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "remote", "get-url", "origin"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132431, "ts": 1789609771170740560, "dur_ms": 1.164, "rc": 0}
+{"ev": "start", "ts": 1789609771189751174, "pid": 1132437, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "status", "--short", "--ignore-submodules=dirty"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609771190235038, "pid": 1132438, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "log", "--oneline", "-n", "5"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609771190861531, "pid": 1132440, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "config", "user.name"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132437, "ts": 1789609771191098492, "dur_ms": 1.347, "rc": 0}
+{"ev": "end", "pid": 1132438, "ts": 1789609771191428736, "dur_ms": 1.194, "rc": 0}
+{"ev": "end", "pid": 1132440, "ts": 1789609771191763440, "dur_ms": 0.902, "rc": 0}
+{"ev": "start", "ts": 1789609779711368531, "pid": 1132637, "bin": "env", "argv": ["env"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132637, "ts": 1789609779713215113, "dur_ms": 1.847, "rc": 0}
+{"ev": "start", "ts": 1789609779720465235, "pid": 1132645, "bin": "grep", "argv": ["grep", "-qs", "i"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132645, "ts": 1789609779721147404, "dur_ms": 0.682, "rc": 1}
+{"ev": "start", "ts": 1789609779723241831, "pid": 1132648, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132648, "ts": 1789609779724786254, "dur_ms": 1.544, "rc": 0}
+{"ev": "end", "pid": 1132651, "ts": 1789609779726980335, "dur_ms": 1.479, "rc": 0}
+{"ev": "end", "pid": 1132652, "ts": 1789609779727126985, "dur_ms": 1.625, "rc": 0}
+{"ev": "start", "ts": 1789609779729384487, "pid": 1132663, "bin": "grep", "argv": ["grep", "on"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609779729441980, "pid": 1132664, "bin": "awk", "argv": ["awk", "{print \"set -o \" $1}"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609779729568122, "pid": 1132665, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132663, "ts": 1789609779730007030, "dur_ms": 0.622, "rc": 0}
+{"ev": "end", "pid": 1132664, "ts": 1789609779739580090, "dur_ms": 10.138, "rc": 0}
+{"ev": "end", "pid": 1132665, "ts": 1789609779739823801, "dur_ms": 10.256, "rc": 0}
+{"ev": "start", "ts": 1789609779740638805, "pid": 1132672, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132670, "ts": 1789609779741945171, "dur_ms": 1.445, "rc": 0}
+{"ev": "end", "pid": 1132671, "ts": 1789609779742110323, "dur_ms": 1.597, "rc": 0}
+{"ev": "end", "pid": 1132672, "ts": 1789609779742317705, "dur_ms": 1.679, "rc": 0}
+{"ev": "start", "ts": 1789609779742866211, "pid": 1132676, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132676, "ts": 1789609779744197670, "dur_ms": 1.331, "rc": 0}
+{"ev": "start", "ts": 1789609779744768658, "pid": 1132678, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132678, "ts": 1789609779746076206, "dur_ms": 1.308, "rc": 0}
+{"ev": "start", "ts": 1789609779746605454, "pid": 1132680, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132680, "ts": 1789609779747850880, "dur_ms": 1.245, "rc": 0}
+{"ev": "start", "ts": 1789609779748355710, "pid": 1132682, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132682, "ts": 1789609779749595426, "dur_ms": 1.24, "rc": 0}
+{"ev": "start", "ts": 1789609779756262435, "pid": 1132686, "bin": "ls", "argv": ["ls", "/home/krli/belllab/AThread/experiments/trace"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132686, "ts": 1789609779757881244, "dur_ms": 1.619, "rc": 0}
+{"ev": "end", "pid": 1132688, "ts": 1789609779760099630, "dur_ms": 1.558, "rc": 2}
+{"ev": "end", "pid": 1132689, "ts": 1789609779760340777, "dur_ms": 1.794, "rc": 0}
+{"ev": "start", "ts": 1789609781904513502, "pid": 1132738, "bin": "sort", "argv": ["sort"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132738, "ts": 1789609781908013601, "dur_ms": 3.5, "rc": 0}
+{"ev": "start", "ts": 1789609781908735721, "pid": 1132750, "bin": "wc", "argv": ["wc", "-l"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1132750, "ts": 1789609781910978035, "dur_ms": 2.242, "rc": 0}
+{"ev": "start", "ts": 1789609790728810045, "pid": 1132901, "bin": "git", "argv": ["git", "rev-parse", "--show-toplevel"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1132901, "ts": 1789609790729583985, "dur_ms": 0.774, "rc": 0}
+{"ev": "start", "ts": 1789609797925871589, "pid": 1133013, "bin": "sort", "argv": ["sort"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133012, "ts": 1789609797928229240, "dur_ms": 2.31, "rc": 0}
+{"ev": "end", "pid": 1133013, "ts": 1789609797928499564, "dur_ms": 2.628, "rc": 0}
+{"ev": "end", "pid": 1133014, "ts": 1789609797928698118, "dur_ms": 2.785, "rc": 0}
+{"ev": "end", "pid": 1133019, "ts": 1789609797931068350, "dur_ms": 1.779, "rc": 0}
+{"ev": "end", "pid": 1133020, "ts": 1789609797931073646, "dur_ms": 1.794, "rc": 0}
+{"ev": "end", "pid": 1133023, "ts": 1789609797933318922, "dur_ms": 1.6, "rc": 0}
+{"ev": "end", "pid": 1133024, "ts": 1789609797933527365, "dur_ms": 1.806, "rc": 0}
+{"ev": "start", "ts": 1789609797934197181, "pid": 1133028, "bin": "wc", "argv": ["wc", "-l"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133028, "ts": 1789609797939513842, "dur_ms": 5.317, "rc": 0}
+{"ev": "start", "ts": 1789609804069114917, "pid": 1133186, "bin": "cat", "argv": ["cat", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module00/file000.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133186, "ts": 1789609804071006128, "dur_ms": 1.891, "rc": 0}
+{"ev": "start", "ts": 1789609804071557155, "pid": 1133188, "bin": "cat", "argv": ["cat", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module07/file042.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133188, "ts": 1789609804073316796, "dur_ms": 1.76, "rc": 0}
+{"ev": "start", "ts": 1789609804073850660, "pid": 1133190, "bin": "cat", "argv": ["cat", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module19/file099.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133190, "ts": 1789609804075489219, "dur_ms": 1.639, "rc": 0}
+{"ev": "end", "pid": 1133279, "ts": 1789609807353528653, "dur_ms": 17.821, "rc": 0}
+{"ev": "end", "pid": 1133278, "ts": 1789609807354032112, "dur_ms": 18.326, "rc": 0}
+{"ev": "end", "pid": 1133294, "ts": 1789609807373009988, "dur_ms": 18.166, "rc": 0}
+{"ev": "end", "pid": 1133295, "ts": 1789609807373289397, "dur_ms": 18.439, "rc": 0}
+{"ev": "start", "ts": 1789609807374037435, "pid": 1133311, "bin": "awk", "argv": ["awk", "{print $2}"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609807374137424, "pid": 1133312, "bin": "sort", "argv": ["sort"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609807374342961, "pid": 1133314, "bin": "sort", "argv": ["sort", "-rn"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609807374443053, "pid": 1133315, "bin": "head", "argv": ["head", "-10"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609807374537259, "pid": 1133310, "bin": "rg", "argv": ["rg", "-n", "^def ", "/home/krli/belllab/AThread/experiments/fixture/repo/src", "--no-heading"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609807374979326, "pid": 1133313, "bin": "uniq", "argv": ["uniq", "-c"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133310, "ts": 1789609807383465064, "dur_ms": 8.928, "rc": 0}
+{"ev": "end", "pid": 1133311, "ts": 1789609807383781667, "dur_ms": 9.744, "rc": 0}
+{"ev": "end", "pid": 1133312, "ts": 1789609807384314322, "dur_ms": 10.177, "rc": 0}
+{"ev": "end", "pid": 1133313, "ts": 1789609807384590266, "dur_ms": 9.611, "rc": 0}
+{"ev": "end", "pid": 1133314, "ts": 1789609807384942820, "dur_ms": 10.6, "rc": 0}
+{"ev": "end", "pid": 1133315, "ts": 1789609807384983837, "dur_ms": 10.541, "rc": 0}
+{"ev": "end", "pid": 1133674, "ts": 1789609827605064281, "dur_ms": 4.829, "rc": 1}
+{"ev": "end", "pid": 1133675, "ts": 1789609827605343730, "dur_ms": 5.13, "rc": 0}
+{"ev": "start", "ts": 1789609827606100621, "pid": 1133691, "bin": "sort", "argv": ["sort", "-u"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609827606150014, "pid": 1133692, "bin": "head", "argv": ["head", "-8"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "start", "ts": 1789609827606253103, "pid": 1133690, "bin": "rg", "argv": ["rg", "-o", "def foo_\\d+", "/home/krli/belllab/AThread/experiments/fixture/repo/src", "--no-filename"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1133690, "ts": 1789609827646252699, "dur_ms": 39.999, "rc": 0}
+{"ev": "end", "pid": 1133692, "ts": 1789609827647084411, "dur_ms": 40.934, "rc": 0}
+{"ev": "end", "pid": 1133691, "ts": 1789609827647126350, "dur_ms": 41.026, "rc": 0}
+{"ev": "end", "pid": 1133709, "ts": 1789609827685450683, "dur_ms": 37.56, "rc": 0}
+{"ev": "end", "pid": 1133710, "ts": 1789609827686348675, "dur_ms": 38.477, "rc": 0}
+{"ev": "end", "pid": 1133711, "ts": 1789609827686477384, "dur_ms": 38.57, "rc": 0}
+{"ev": "end", "pid": 1133729, "ts": 1789609827689444476, "dur_ms": 2.199, "rc": 0}
+{"ev": "end", "pid": 1133728, "ts": 1789609827690233752, "dur_ms": 2.994, "rc": 0}
+{"ev": "start", "ts": 1789609863434266683, "pid": 1134364, "bin": "python3", "argv": ["python3", "/tmp/verify_fixture.py"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1134364, "ts": 1789609863899062906, "dur_ms": 464.796, "rc": 0}
+{"ev": "start", "ts": 1789609875038267871, "pid": 1134623, "bin": "git", "argv": ["git", "status", "--short"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1134623, "ts": 1789609875040115482, "dur_ms": 1.848, "rc": 0}
+{"ev": "start", "ts": 1789609875040758128, "pid": 1134625, "bin": "git", "argv": ["git", "-C", "experiments/fixture/repo", "status", "--short"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1134625, "ts": 1789609875044250913, "dur_ms": 3.493, "rc": 0}
+{"ev": "start", "ts": 1789609875044941376, "pid": 1134631, "bin": "git", "argv": ["git", "status"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1134631, "ts": 1789609875046059771, "dur_ms": 1.118, "rc": 0}
+{"ev": "start", "ts": 1789609889925781592, "pid": 1134908, "bin": "rm", "argv": ["rm", "-rf", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module16/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module09/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module07/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module05/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module02/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module19/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module08/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module06/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module04/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module00/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module14/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module01/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module15/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module12/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module11/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module17/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module18/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module10/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module03/__pycache__", "/home/krli/belllab/AThread/experiments/fixture/repo/src/module13/__pycache__"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1134908, "ts": 1789609889934783820, "dur_ms": 9.002, "rc": 0}
+{"ev": "start", "ts": 1789609889935468585, "pid": 1134910, "bin": "git", "argv": ["git", "-C", "/home/krli/belllab/AThread/experiments/fixture/repo", "status", "--short"], "cwd": "/home/krli/belllab/AThread/experiments/trace", "venv": 0}
+{"ev": "end", "pid": 1134910, "ts": 1789609889937863418, "dur_ms": 2.395, "rc": 0}
+{"ev": "start", "ts": 1789609889938363081, "pid": 1134916, "bin": "git", "argv": ["git", "status", "--short"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1134916, "ts": 1789609889939351005, "dur_ms": 0.988, "rc": 0}
+{"ev": "start", "ts": 1789609889939931155, "pid": 1134919, "bin": "wc", "argv": ["wc", "-l"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1134919, "ts": 1789609889943521639, "dur_ms": 3.59, "rc": 0}

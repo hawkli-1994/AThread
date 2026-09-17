@@ -1,0 +1,24 @@
+{"ev": "start", "ts": 1789613395943537587, "pid": 1195549, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "end", "pid": 1195549, "ts": 1789613395945691703, "dur_ms": 2.154, "rc": 0}
+{"ev": "start", "ts": 1789613396598629094, "pid": 1195590, "bin": "grep", "argv": ["grep", "-qs", "i"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "end", "pid": 1195590, "ts": 1789613396599288079, "dur_ms": 0.659, "rc": 1}
+{"ev": "start", "ts": 1789613413202941587, "pid": 1195899, "bin": "npm", "argv": ["npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "start", "ts": 1789613413204933314, "pid": 1195900, "bin": "node", "argv": ["node", "/home/krli/.nvm/versions/node/v26.8.1/bin/npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "start", "ts": 1789613413272173033, "pid": 1195912, "bin": "sh", "argv": ["sh", "-c", "node test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "start", "ts": 1789613413272962930, "pid": 1195914, "bin": "node", "argv": ["node", "test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "end", "pid": 1195914, "ts": 1789613413293025239, "dur_ms": 20.062, "rc": 1}
+{"ev": "end", "pid": 1195912, "ts": 1789613413293189837, "dur_ms": 21.017, "rc": 1}
+{"ev": "end", "pid": 1195900, "ts": 1789613413297291782, "dur_ms": 92.358, "rc": 1}
+{"ev": "end", "pid": 1195899, "ts": 1789613413297376646, "dur_ms": 94.435, "rc": 1}
+{"ev": "start", "ts": 1789613434504007279, "pid": 1196416, "bin": "npm", "argv": ["npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "start", "ts": 1789613434505955032, "pid": 1196417, "bin": "node", "argv": ["node", "/home/krli/.nvm/versions/node/v26.8.1/bin/npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "start", "ts": 1789613434571519879, "pid": 1196429, "bin": "sh", "argv": ["sh", "-c", "node test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "start", "ts": 1789613434572340531, "pid": 1196431, "bin": "node", "argv": ["node", "test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "end", "pid": 1196431, "ts": 1789613434591707776, "dur_ms": 19.367, "rc": 0}
+{"ev": "end", "pid": 1196429, "ts": 1789613434591886325, "dur_ms": 20.366, "rc": 0}
+{"ev": "end", "pid": 1196417, "ts": 1789613434595356468, "dur_ms": 89.401, "rc": 0}
+{"ev": "end", "pid": 1196416, "ts": 1789613434595457970, "dur_ms": 91.451, "rc": 0}
+{"ev": "start", "ts": 1789613448655821750, "pid": 1196655, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "end", "pid": 1196655, "ts": 1789613448658329917, "dur_ms": 2.508, "rc": 0}
+{"ev": "start", "ts": 1789613448659105584, "pid": 1196658, "bin": "grep", "argv": ["grep", "-c", "\"ev\":\"start\"", "/home/krli/belllab/AThread/experiments/trace/logs/kimi_C.jsonl"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C", "venv": 0}
+{"ev": "end", "pid": 1196658, "ts": 1789613448659808825, "dur_ms": 0.703, "rc": 0}

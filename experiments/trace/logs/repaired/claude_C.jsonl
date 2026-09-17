@@ -1,0 +1,66 @@
+{"ev": "start", "ts": 1789613556594820925, "pid": 1199056, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199056, "ts": 1789613556597225830, "dur_ms": 2.405, "rc": 0}
+{"ev": "start", "ts": 1789613556732614780, "pid": 1199081, "bin": "git", "argv": ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "ls-files", "--error-unmatch", "--", ":(icase).claude/settings.local.json"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199081, "ts": 1789613556733822495, "dur_ms": 1.208, "rc": 1}
+{"ev": "start", "ts": 1789613556734521123, "pid": 1199083, "bin": "git", "argv": ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "-C", "/home/krli/belllab/AThread", "ls-files", "--error-unmatch", "--", ":(icase).claude/settings.local.json"], "cwd": "/home/krli/belllab/AThread", "venv": 0}
+{"ev": "end", "pid": 1199083, "ts": 1789613556735355425, "dur_ms": 0.834, "rc": 1}
+{"ev": "start", "ts": 1789613556740231649, "pid": 1199085, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=", "remote", "get-url", "origin"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199085, "ts": 1789613556741185382, "dur_ms": 0.954, "rc": 0}
+{"ev": "start", "ts": 1789613556758420726, "pid": 1199089, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "status", "--short", "--ignore-submodules=dirty"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613556758887137, "pid": 1199090, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "--no-optional-locks", "log", "--oneline", "-n", "5"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613556759362495, "pid": 1199092, "bin": "git", "argv": ["/home/krli/belllab/AThread/experiments/trace/shim_bin/git", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null", "-c", "core.askPass=", "-c", "protocol.ext.allow=never", "-c", "submodule.recurse=false", "-c", "log.showSignature=false", "-c", "gc.auto=0", "-c", "maintenance.auto=false", "config", "user.name"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199089, "ts": 1789613556759696526, "dur_ms": 1.276, "rc": 0}
+{"ev": "end", "pid": 1199090, "ts": 1789613556759989504, "dur_ms": 1.102, "rc": 0}
+{"ev": "end", "pid": 1199092, "ts": 1789613556760358012, "dur_ms": 0.995, "rc": 0}
+{"ev": "start", "ts": 1789613559670127094, "pid": 1199280, "bin": "env", "argv": ["env"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199280, "ts": 1789613559671968367, "dur_ms": 1.841, "rc": 0}
+{"ev": "start", "ts": 1789613559679115385, "pid": 1199288, "bin": "grep", "argv": ["grep", "-qs", "i"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199288, "ts": 1789613559679827313, "dur_ms": 0.712, "rc": 1}
+{"ev": "start", "ts": 1789613559680859628, "pid": 1199291, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199291, "ts": 1789613559682647099, "dur_ms": 1.787, "rc": 0}
+{"ev": "start", "ts": 1789613559683416746, "pid": 1199294, "bin": "cut", "argv": ["cut", "-d ", "-f3"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613559683533110, "pid": 1199295, "bin": "grep", "argv": ["grep", "-vE", "^_[^_]"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199294, "ts": 1789613559685320422, "dur_ms": 1.904, "rc": 0}
+{"ev": "end", "pid": 1199295, "ts": 1789613559685498875, "dur_ms": 1.966, "rc": 0}
+{"ev": "start", "ts": 1789613559688534664, "pid": 1199308, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199306, "ts": 1789613559689177093, "dur_ms": 0.747, "rc": 0}
+{"ev": "end", "pid": 1199307, "ts": 1789613559689680538, "dur_ms": 1.249, "rc": 0}
+{"ev": "end", "pid": 1199308, "ts": 1789613559690194204, "dur_ms": 1.659, "rc": 0}
+{"ev": "start", "ts": 1789613559690949847, "pid": 1199313, "bin": "sed", "argv": ["sed", "s/^alias //g"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613559690977276, "pid": 1199314, "bin": "sed", "argv": ["sed", "s/^/alias -- /"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613559691133582, "pid": 1199315, "bin": "head", "argv": ["head", "-n", "1000"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199313, "ts": 1789613559691773848, "dur_ms": 0.824, "rc": 0}
+{"ev": "end", "pid": 1199314, "ts": 1789613559691934831, "dur_ms": 0.957, "rc": 0}
+{"ev": "end", "pid": 1199315, "ts": 1789613559692734546, "dur_ms": 1.601, "rc": 0}
+{"ev": "start", "ts": 1789613559693429741, "pid": 1199319, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199319, "ts": 1789613559694996972, "dur_ms": 1.567, "rc": 0}
+{"ev": "start", "ts": 1789613559695621244, "pid": 1199321, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199321, "ts": 1789613559697356134, "dur_ms": 1.735, "rc": 0}
+{"ev": "start", "ts": 1789613559698186509, "pid": 1199323, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199323, "ts": 1789613559699925165, "dur_ms": 1.739, "rc": 0}
+{"ev": "start", "ts": 1789613559700647001, "pid": 1199325, "bin": "cat", "argv": ["cat"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199325, "ts": 1789613559702461428, "dur_ms": 1.814, "rc": 0}
+{"ev": "start", "ts": 1789613559709146918, "pid": 1199329, "bin": "ls", "argv": ["ls", "-la", "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199329, "ts": 1789613559711615487, "dur_ms": 2.468, "rc": 0}
+{"ev": "start", "ts": 1789613563581405800, "pid": 1199394, "bin": "ls", "argv": ["ls", "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C/src"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199394, "ts": 1789613563583545756, "dur_ms": 2.14, "rc": 0}
+{"ev": "start", "ts": 1789613571320964978, "pid": 1199870, "bin": "npm", "argv": ["npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613571322784093, "pid": 1199871, "bin": "node", "argv": ["node", "/home/krli/.nvm/versions/node/v26.8.1/bin/npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613571389295049, "pid": 1199883, "bin": "sh", "argv": ["sh", "-c", "node test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613571390141670, "pid": 1199885, "bin": "node", "argv": ["node", "test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1199885, "ts": 1789613571410180264, "dur_ms": 20.038, "rc": 1}
+{"ev": "end", "pid": 1199883, "ts": 1789613571410361673, "dur_ms": 21.066, "rc": 1}
+{"ev": "end", "pid": 1199871, "ts": 1789613571414888958, "dur_ms": 92.105, "rc": 1}
+{"ev": "end", "pid": 1199870, "ts": 1789613571414998326, "dur_ms": 94.033, "rc": 1}
+{"ev": "start", "ts": 1789613582414575777, "pid": 1200121, "bin": "npm", "argv": ["npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613582416592801, "pid": 1200122, "bin": "node", "argv": ["node", "/home/krli/.nvm/versions/node/v26.8.1/bin/npm", "test"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613582481576239, "pid": 1200134, "bin": "sh", "argv": ["sh", "-c", "node test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "start", "ts": 1789613582482490666, "pid": 1200136, "bin": "node", "argv": ["node", "test.js"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1200136, "ts": 1789613582505202431, "dur_ms": 22.711, "rc": 0}
+{"ev": "end", "pid": 1200134, "ts": 1789613582505438512, "dur_ms": 23.862, "rc": 0}
+{"ev": "end", "pid": 1200122, "ts": 1789613582509193746, "dur_ms": 92.601, "rc": 0}
+{"ev": "end", "pid": 1200121, "ts": 1789613582509286756, "dur_ms": 94.711, "rc": 0}
+{"ev": "start", "ts": 1789613591565789603, "pid": 1200368, "bin": "date", "argv": ["date", "+%s"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1200368, "ts": 1789613591568486603, "dur_ms": 2.697, "rc": 0}
+{"ev": "start", "ts": 1789613591569413398, "pid": 1200371, "bin": "grep", "argv": ["grep", "-c", "\"ev\":\"start\"", "/home/krli/belllab/AThread/experiments/trace/logs/claude_C.jsonl"], "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C", "venv": 0}
+{"ev": "end", "pid": 1200371, "ts": 1789613591570115032, "dur_ms": 0.702, "rc": 0}

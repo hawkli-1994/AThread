@@ -1,0 +1,11 @@
+total recoverable execs:        510
+python* execs:                  12 (2.4%)
+  of which shim-eligible:       11
+  blocked by venv:              0
+  forms: {'script': 8, '-m': 3, 'flag -': 1}
+  observed wall: eligible 2021ms | ineligible 298ms
+  node* execs (v0.1 does NOT accelerate): 8
+
+all bins: [('git', 94), ('cat', 63), ('tr', 63), ('wc', 46), ('cut', 42), ('grep', 39), ('head', 33), ('date', 26), ('ls', 16), ('sed', 14)]
+
+HIT RATE for v0.1 (python-only scope): 11/12 python calls = 92% of python calls, but python is only 2% of all calls

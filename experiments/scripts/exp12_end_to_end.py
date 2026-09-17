@@ -44,13 +44,15 @@ def pct(xs, q):
     return xs[min(len(xs)-1, int(len(xs)*q))] if xs else 0.0
 
 def bench(cmd, cwd, mode, n=15):
-    ts = []
+    ts, rcs, outs = [], [], []
     for _ in range(n):
         t0 = time.monotonic()
-        subprocess.run(cmd, cwd=cwd, env=env_for(mode),
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        p = subprocess.run(cmd, cwd=cwd, env=env_for(mode),
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ts.append((time.monotonic() - t0) * 1000)
-    return ts
+        rcs.append(p.returncode)
+        outs.append(hash(p.stdout + b"\0" + p.stderr))
+    return ts, rcs, outs
 
 def ensure_daemon():
     r = subprocess.run([ATHREAD, "status"], capture_output=True, text=True)
@@ -63,18 +65,20 @@ ensure_daemon()
 
 print("\n-- S1: test loop (bugrepo, 15 runs each) --")
 cmd = ["python3", "-m", "unittest", "discover", "-s", "tests", "-v"]
-a = bench(cmd, BUGREPO, "athread")
-b = bench(cmd, BUGREPO, "baseline")
-print(f"  baseline p50 {p50(b):6.1f}ms  total {sum(b)/1000:5.2f}s")
-print(f"  athread  p50 {p50(a):6.1f}ms  total {sum(a)/1000:5.2f}s   ({p50(b)/p50(a):.1f}x p50)")
+a, arc, aout = bench(cmd, BUGREPO, "athread")
+b, brc, bout = bench(cmd, BUGREPO, "baseline")
+eq = "OK" if (set(arc) == set(brc) and set(aout) == set(bout)) else "DIVERGED"
+print(f"  baseline p50 {p50(b):6.1f}ms  total {sum(b)/1000:5.2f}s  rc={sorted(set(brc))}")
+print(f"  athread  p50 {p50(a):6.1f}ms  total {sum(a)/1000:5.2f}s  rc={sorted(set(arc))}   ({p50(b)/p50(a):.1f}x p50, output+rc {eq})")
 
 print("\n-- S2: heavy-import -c (repo, 15 runs each) --")
 cmd = ["python3", "-c",
        "import json,re,subprocess,pathlib,argparse;d={i:[i]*10 for i in range(2000)};json.dumps(d)"]
-a = bench(cmd, REPO, "athread")
-b = bench(cmd, REPO, "baseline")
-print(f"  baseline p50 {p50(b):6.1f}ms")
-print(f"  athread  p50 {p50(a):6.1f}ms   ({p50(b)/p50(a):.1f}x p50)")
+a, arc, aout = bench(cmd, REPO, "athread")
+b, brc, bout = bench(cmd, REPO, "baseline")
+eq = "OK" if (set(arc) == set(brc) and set(aout) == set(bout)) else "DIVERGED"
+print(f"  baseline p50 {p50(b):6.1f}ms  rc={sorted(set(brc))}")
+print(f"  athread  p50 {p50(a):6.1f}ms  rc={sorted(set(arc))}   ({p50(b)/p50(a):.1f}x p50, output+rc {eq})")
 
 print("\n-- S3: sparse multi-session sim (30 sessions x 25s, transparent PATH) --")
 DUR = 25
@@ -134,35 +138,9 @@ for kind in ("py", "test", "git", "rg", "cat"):
           f"athread p50 {p50(xa):6.1f} p95 {pct(xa,.95):6.1f}"
           + (f"  ({p50(xb)/max(p50(xa),0.01):.1f}x)" if kind in ("py", "test") else ""))
 
-print("\n-- S4: memory, 20 concurrent python via shim vs 20 cold --")
-def pss_total():
-    tot = 0
-    for x in os.listdir("/proc"):
-        if x.isdigit():
-            try:
-                for l in open(f"/proc/{x}/smaps_rollup"):
-                    if l.startswith("Pss:"):
-                        tot += int(l.split()[1])
-            except OSError:
-                pass
-    return tot / 1024
-
-CODE = "import json,re,subprocess,pathlib,argparse;import time;d={i:[i]*10 for i in range(2000)};time.sleep(12)"
-m0 = pss_total()
-ps = [subprocess.Popen(["python3", "-c", CODE], env=env_for("athread"),
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) for _ in range(20)]
-time.sleep(6)
-m1 = pss_total()
-for p in ps:
-    p.terminate()
-print(f"  20 shim python procs + daemon: +{m1-m0:.0f} MB total")
-ps = [subprocess.Popen(["python3", "-c", CODE], env=env_for("baseline"),
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) for _ in range(20)]
-time.sleep(6)
-m2 = pss_total()
-for p in ps:
-    p.terminate()
-print(f"  20 cold python procs:          +{m2-m1:.0f} MB total")
+print("\n-- S4: memory — SUPERSEDED by exp13_memory_pl.py --")
+print("  system-wide PSS deltas are unverifiable (daemon CoW dilution + noise);")
+print("  full-process-group accounting: see results/exp13_memory_pl.txt")
 
 print("\n-- S5: fallback (PYTHONPATH set) --")
 e = env_for("athread"); e["PYTHONPATH"] = "/tmp"

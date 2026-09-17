@@ -1,30 +1,40 @@
 #!/usr/bin/env python3
 """analyze_trace.py: turn raw agent exec traces into a command profile.
 
+Reads logs/repaired/<label>.jsonl produced by repair_logs.py (the original
+logs contain interleaved fragments from the old non-atomic shim; repair_logs
+reports exactly how much was unrecoverable). Every anomaly — unparseable
+line, start without end, end without start — is counted and printed, never
+silently skipped.
+
 Pairs start/end events by pid, emits distribution stats and a replay list
 of the python/node commands actually invoked by real agents.
 """
 import glob, json, os, sys, hashlib
 from collections import Counter, defaultdict
 
-LOGDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+HERE = os.path.dirname(os.path.abspath(__file__))
+LOGDIR = os.path.join(HERE, "logs")
+REPAIRDIR = os.path.join(LOGDIR, "repaired")
 REPLAY_OUT = os.path.join(LOGDIR, "replay_list.json")
 
 def load(label):
-    path = os.path.join(LOGDIR, f"{label}.jsonl")
+    path = os.path.join(REPAIRDIR, f"{label}.jsonl")
     starts, ends = {}, {}
-    recs = []
+    n_bad = n_orphan_end = 0
     for line in open(path):
         try:
             e = json.loads(line)
         except json.JSONDecodeError:
+            n_bad += 1
             continue
         if e["ev"] == "start":
             starts[e["pid"]] = e
         else:
             ends.setdefault(e["pid"], e)  # dedupe double end lines
+    recs = []
     for pid, s in starts.items():
-        e = ends.get(pid)
+        e = ends.pop(pid, None)
         recs.append({
             "bin": s["bin"], "argv": s["argv"], "cwd": s["cwd"],
             "venv": s.get("venv", 0),
@@ -32,28 +42,32 @@ def load(label):
             "rc": e["rc"] if e else None,
             "ts": s["ts"],
         })
-    return recs
+    n_orphan_end = len(ends)  # end without a recoverable start
+    return recs, n_bad, n_orphan_end
 
 def main():
     labels = sorted(os.path.basename(p)[:-6]
-                    for p in glob.glob(os.path.join(LOGDIR, "*.jsonl")))
-    labels = [l for l in labels if l not in ("replay_list",)]
+                    for p in glob.glob(os.path.join(REPAIRDIR, "*.jsonl")))
     all_recs = {}
+    tot_bad = tot_orphan = 0
     for l in labels:
-        recs = load(l)
+        recs, n_bad, n_orphan = load(l)
+        tot_bad += n_bad; tot_orphan += n_orphan
         # exclude the agent runtime itself (e.g. codex's long-lived `node` process)
         recs = [r for r in recs if not (r["dur_ms"] and r["dur_ms"] > 120000)]
-        all_recs[l] = recs
+        all_recs[l] = (recs, n_bad, n_orphan)
 
     replay = []
     grand = Counter(); grand_dur = Counter()
-    for l, recs in all_recs.items():
-        done = [r for r in recs if r["dur_ms"] is not None]
+    n_recoverable = 0
+    for l, (recs, n_bad, n_orphan) in all_recs.items():
         n = len(recs)
+        n_recoverable += n
         cnt = Counter(r["bin"] for r in recs)
         dur = Counter()
-        for r in done:
-            dur[r["bin"]] += r["dur_ms"]
+        for r in recs:
+            if r["dur_ms"] is not None:
+                dur[r["bin"]] += r["dur_ms"]
         total_dur = sum(dur.values())
         span_s = (max(r["ts"] for r in recs) - min(r["ts"] for r in recs)) / 1e9 if recs else 0
         meta = {}
@@ -64,7 +78,8 @@ def main():
         py_dur = dur.get("python3", 0) + dur.get("python", 0)
         node_n = cnt.get("node", 0) + cnt.get("nodejs", 0)
         node_dur = dur.get("node", 0) + dur.get("nodejs", 0)
-        print(f"\n== {l} ==  execs={n} session_wall={meta.get('wall_s','?')}s trace_span={span_s:.0f}s")
+        print(f"\n== {l} ==  execs={n} (orphan_ends={n_orphan}) "
+              f"session_wall={meta.get('wall_s','?')}s trace_span={span_s:.0f}s")
         print(f"   python: {py_n} execs ({py_n/max(n,1)*100:.0f}%), {py_dur:.0f}ms "
               f"({py_dur/max(total_dur,1)*100:.0f}% of cmd time)")
         print(f"   node:   {node_n} execs, {node_dur:.0f}ms")
@@ -85,7 +100,11 @@ def main():
             replay.append({"label": l, "bin": r["bin"], "argv": r["argv"],
                            "cwd": r["cwd"], "observed_ms": r["dur_ms"]})
 
-    print(f"\n== ALL AGENTS combined ==")
+    print(f"\n== ALL AGENTS combined (recoverable execs only) ==")
+    print(f"   recoverable execs: {n_recoverable}; orphan end events (start lost "
+          f"to corruption): {tot_orphan}; unparseable repaired lines: {tot_bad}")
+    print("   NOTE: ~110 record fragments in the original logs were unrecoverable "
+          "(see repair_logs.py); the true exec count is higher.")
     print("bins by count: " + ", ".join(f"{b}×{c}" for b, c in grand.most_common(15)))
     td = sum(grand_dur.values())
     print("bins by time:  " + ", ".join(f"{b}={d:.0f}ms" for b, d in grand_dur.most_common(10)))

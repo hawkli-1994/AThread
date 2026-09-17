@@ -17,7 +17,7 @@ export PATH="$HOME/.athread/bin:$PATH"
 export ATHREAD_SOCK="$HOME/.athread/athreadd.sock"
 export ATHREAD_REAL_PYTHON="/usr/bin/python3"
 
-python3 -m unittest discover -s tests   # 4.8x faster (33.7ms -> 7.0ms)
+python3 -m unittest discover -s tests   # 4.8x faster (34.2ms -> 7.1ms, output-identical)
 ```
 
 ## What takes the fast path
@@ -34,6 +34,12 @@ and none of `VIRTUAL_ENV` / `PYTHONPATH` / `CONDA_PREFIX` set.
 
 ## Semantics notes / known divergences
 
+The fast path is held to a differential standard: `parity_test.py` runs 24
+cases (exit codes, long-running commands, atexit, SystemExit messages, argv
+fidelity, `__main__` semantics, import paths, stdin scripts, file side
+effects, tracebacks) asserting rc/stdout/stderr byte-identical to cold
+CPython. All pass. Remaining deliberate divergences:
+
 - Children inherit the daemon's preloaded `sys.modules` (~35 stdlib modules,
   configurable via `~/.athread/warm_modules.txt`). Code that inspects
   `sys.modules` at runtime may observe them.
@@ -42,17 +48,21 @@ and none of `VIRTUAL_ENV` / `PYTHONPATH` / `CONDA_PREFIX` set.
   broken anyway; noted for completeness.
 - Warm root must stay single-threaded (fork safety). Do not warm modules
   that spawn threads or async event loops.
+- `os._exit` still skips full `Py_Finalize` (unsafe in forked children);
+  atexit handlers registered by user code DO run, stdio IS flushed.
 - Signals: shim forwards SIGINT/SIGTERM/SIGHUP/SIGQUIT to the child.
+- `python -` (explicit stdin dash) and >4096 argv fall back to the real
+  interpreter rather than risk divergence.
 
 ## Measured (exp12, this machine, transparent PATH shim)
 
 | scenario | baseline | athread | speedup |
 |---|---|---|---|
-| `python -m unittest discover` loop | 33.7ms | 7.0ms | 4.8x |
+| `python -m unittest discover` loop | 34.2ms | 7.1ms | 4.8x (rc+output identical) |
 | heavy-import `python -c` | 21.5ms | 6.2ms | 3.4x |
 | 30-session sparse sim, python p50 | 22.5ms | 6.8ms | 3.3x |
 | same, git/rg/cat | — | identical | no regression |
-| 20 concurrent python procs memory | 78MB | 50MB (incl. daemon) | -36% |
+| 20 concurrent import-heavy procs, full process group | 129.5MB | 111.6MB (incl. daemon) | -14% (exp13) |
 
 ## Architecture
 

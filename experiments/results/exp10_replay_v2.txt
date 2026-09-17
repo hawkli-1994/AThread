@@ -1,0 +1,31 @@
+# exp10 replay v2 — real-shim replay with strict equivalence checks (2026-09-17)
+# replaces the retracted 21x/5.3x numbers from the broken internal-broker replay
+
+== classification of the 13 observed python/node commands ==
+
+  skip (node/npm, not AThread v0.1 target): /home/krli/.nvm/versions/node/v26.8.1/bin/npm test
+  skip (node/npm, not AThread v0.1 target): test.js
+  NON-REPLAYABLE (content lost, retracting old claim): -  observed 298ms in trace
+  NON-REPLAYABLE (content lost, retracting old claim): /tmp/analyze_even.py  observed 337ms in trace
+  NON-REPLAYABLE (content lost, retracting old claim): /tmp/check_modules.py  observed 65ms in trace
+  NON-REPLAYABLE (content lost, retracting old claim): /tmp/loc_stats.py  observed 44ms in trace
+  NON-REPLAYABLE (content lost, retracting old claim): /tmp/verify_burst1.py  observed 101ms in trace
+  NON-REPLAYABLE (content lost, retracting old claim): /tmp/verify_convention.py  observed 366ms in trace
+  NON-REPLAYABLE (content lost, retracting old claim): /tmp/verify_fixture.py  observed 465ms in trace
+
+== real replay through shim+athreadd (7 reps each, fresh sandbox, equivalence-checked) ==
+unittest discover (reconstructed ws) cold    33.5ms  warm     7.7ms    4.3x   [EQUIV-OK]
+
+== synthetic equivalents of the lost /tmp scripts (LABELED SYNTHETIC) ==
+analyze_even.py (synthetic equiv, obs 337ms) cold    70.9ms  warm    60.5ms    1.2x   [EQUIV-OK]
+check_modules.py (synthetic equiv, obs 65ms) cold    57.8ms  warm    44.8ms    1.3x   [EQUIV-OK]
+loc_stats.py (synthetic equiv, obs 44ms) cold    40.0ms  warm    29.0ms    1.4x   [EQUIV-OK]
+verify_burst1.py (synthetic equiv, obs 101ms) cold    37.6ms  warm    28.0ms    1.3x   [EQUIV-OK]
+verify_convention.py (synthetic equiv, obs 366ms) cold    30.6ms  warm    18.1ms    1.7x   [EQUIV-OK]
+verify_fixture.py (synthetic equiv, obs 465ms) cold    31.2ms  warm    21.8ms    1.4x   [EQUIV-OK]
+
+== summary ==
+equivalence-checked rows: 7/7
+cold total p50: 302ms  warm total p50: 210ms  -> 1.4x on this reconstructed mix
+
+NOTE: the old '21x' (-m mishandled) and '5.3x' (stdin) numbers are retracted; this table is the supported replacement.

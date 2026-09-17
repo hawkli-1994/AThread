@@ -1,27 +1,29 @@
 // exec trace shim: logs start/end of every invocation as JSON lines.
 // env: ATHREAD_TRACE_LOG (log file), ATHREAD_REAL_PATHS (colon-separated dirs to resolve real binary)
+//
+// Each record is built in memory and written with a SINGLE write() call:
+// with O_APPEND one write is atomic, so concurrent shims never interleave.
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <time.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 
-static void jesc(int fd, const char *s) {
+static void jesc_f(FILE *f, const char *s) {
     for (const char *p = s; *p; p++) {
-        char b[8];
-        int n = 0;
         switch (*p) {
-            case '"':  n = snprintf(b, 8, "\\\""); break;
-            case '\\': n = snprintf(b, 8, "\\\\"); break;
-            case '\n': n = snprintf(b, 8, "\\n"); break;
+            case '"':  fputs("\\\"", f); break;
+            case '\\': fputs("\\\\", f); break;
+            case '\n': fputs("\\n", f); break;
             default:
-                if ((unsigned char)*p < 0x20) n = snprintf(b, 8, "\\u%04x", *p);
-                else { write(fd, p, 1); continue; }
+                if ((unsigned char)*p < 0x20) fprintf(f, "\\u%04x", *p);
+                else fputc(*p, f);
         }
-        write(fd, b, n);
     }
 }
 
@@ -29,6 +31,39 @@ static long long nowns(void) {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
     return ts.tv_sec * 1000000000LL + ts.tv_nsec;
+}
+
+static void log_line(int fd, long long t0, const char *ev, pid_t self,
+                     const char *name, char **argv, int argc, const char *cwd,
+                     double dur_ms, int rc) {
+    char *buf = NULL;
+    size_t sz = 0;
+    FILE *f = open_memstream(&buf, &sz);
+    if (!f) return;
+    if (!strcmp(ev, "start")) {
+        fprintf(f, "{\"ev\":\"start\",\"ts\":%lld,\"pid\":%d,\"bin\":\"", t0, self);
+        jesc_f(f, name);
+        fprintf(f, "\",\"argv\":[");
+        for (int i = 0; i < argc; i++) {
+            fprintf(f, "%s\"", i ? "," : "");
+            jesc_f(f, argv[i]);
+            fprintf(f, "\"");
+        }
+        fprintf(f, "],\"cwd\":\"");
+        jesc_f(f, cwd);
+        fprintf(f, "\",\"venv\":%d}\n", getenv("VIRTUAL_ENV") ? 1 : 0);
+    } else {
+        fprintf(f, "{\"ev\":\"end\",\"pid\":%d,\"ts\":%lld,\"dur_ms\":%.3f,\"rc\":%d}\n",
+                self, nowns(), dur_ms, rc);
+    }
+    fclose(f);  // flushes into buf
+    size_t off = 0;
+    while (off < sz) {
+        ssize_t n = write(fd, buf + off, sz - off);
+        if (n < 0) { if (errno == EINTR) continue; break; }
+        off += (size_t)n;
+    }
+    free(buf);
 }
 
 int main(int argc, char **argv) {
@@ -63,17 +98,7 @@ int main(int argc, char **argv) {
     if (!getcwd(cwd, sizeof cwd)) snprintf(cwd, sizeof cwd, "?");
     pid_t self = getpid();
 
-    dprintf(fd, "{\"ev\":\"start\",\"ts\":%lld,\"pid\":%d,\"bin\":\"", t0, self);
-    jesc(fd, name);
-    dprintf(fd, "\",\"argv\":[");
-    for (int i = 0; i < argc; i++) {
-        dprintf(fd, "%s\"", i ? "," : "");
-        jesc(fd, argv[i]);
-        dprintf(fd, "\"");
-    }
-    dprintf(fd, "],\"cwd\":\"");
-    jesc(fd, cwd);
-    dprintf(fd, "\",\"venv\":%d}\n", getenv("VIRTUAL_ENV") ? 1 : 0);
+    log_line(fd, t0, "start", self, name, argv, argc, cwd, 0, 0);
 
     pid_t pid = fork();
     if (pid == 0) {
@@ -85,8 +110,7 @@ int main(int argc, char **argv) {
     waitpid(pid, &status, 0);
     long long dur = nowns() - t0;
     int rc = WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status);
-    dprintf(fd, "{\"ev\":\"end\",\"pid\":%d,\"ts\":%lld,\"dur_ms\":%.3f,\"rc\":%d}\n",
-            self, nowns(), dur / 1e6, rc);
+    log_line(fd, t0, "end", self, name, NULL, 0, NULL, dur / 1e6, rc);
     close(fd);
     return rc;
 }

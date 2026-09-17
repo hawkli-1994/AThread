@@ -1,0 +1,11 @@
+
+== exp14: fixed-trace capacity A/B ==
+executed commands (after equal skips): A=498 B=498
+wall:      A 19.7s   B 19.6s
+cpu ticks: A 727   B 655 (10% delta)
+python equivalence (rc+stdout): MATCH (12 python cmds)
+  python3  p50 A    70.4ms  B     9.4ms   p95 A   144.7  B   143.5  n=12
+  git      p50 A     1.1ms  B     1.1ms   p95 A     8.9  B     8.7  n=94
+  cat      p50 A     1.5ms  B     1.6ms   p95 A    15.4  B    15.5  n=63
+  tr       p50 A     1.6ms  B     1.5ms   p95 A     1.9  B     2.0  n=63
+  wc       p50 A     1.6ms  B     1.7ms   p95 A    46.6  B    47.8  n=46

@@ -249,7 +249,7 @@ python3 scripts/exp5_pty.py       # 约 30 秒
 
 ## 规模
 
-14 个真实会话：3 个 agent（Claude Code 2.1.270 / Kimi CLI 0.43.1 / Codex CLI 0.154.0）× 4 类任务 × 含 3 会话并发 burst。共 585 次 execve 被记录（已剔除 codex 自身的常驻 node 运行时进程）。
+14 个真实会话：3 个 agent（Claude Code 2.1.270 / Kimi CLI 0.43.1 / Codex CLI 0.154.0）× 4 类任务 × 含 3 会话并发 burst。~~共 585 次 execve 被记录~~ **勘误（第七轮）**：原始日志 1238 行中 110 行因旧 trace shim 非原子写（多进程 dprintf 交错）损坏；修复后可确认 **510 次 execve**，另有 106 个孤儿 end 事件佐证丢失的 start，~110 条记录碎片不可恢复。分布结论（git 最频、python 少而重）在修复后不变。
 
 ## 按任务类型的真实命令画像
 
@@ -269,19 +269,19 @@ python3 scripts/exp5_pty.py       # 约 30 秒
    - Node 类任务：node+npm 占一半以上耗时，需要 Node 方案（V8 snapshot）；
    - 大仓库文本处理类任务：成本在 coreutils 管道（sort/xargs/wc/grep），这些**冷启动已经很快（<1ms），zygote 帮不上**，需要的是共享索引/内容缓存（Phase 2）和 page-cache 友好性。
    → AThread 的两个支柱（zygote + workspace 缓存）分别命中不同的任务类型，都有真实数据支撑。
-2. **测试循环是最大的单点胜利**：回放真实命令 `python3 -m unittest discover -s tests -v`——冷启动 64.2ms → zygote warm **3.1ms（21 倍）**。agent 修 bug 时反复跑测试，每次省 60ms+，且 unittest/pytest 的收集+导入阶段恰好是 zygote 预热内容。`python3 -`（stdin 脚本）5.3 倍。重计算型脚本（analyze_even.py，365ms）只有 1.1 倍——诚实的下限：启动税占比小。
+2. **测试循环是真实命中场景，但加速比要诚实重测**：~~回放真实命令 `python3 -m unittest discover -s tests -v`——冷启动 64.2ms → zygote warm 3.1ms（21 倍）~~ **勘误（第七轮）：该 21 倍无效**——旧 replay 把 `-m` 当脚本路径执行，失败立即返回制造了假加速。用真实 shim+daemon 重测并做 rc/输出等价校验后：**冷 33.7ms → warm 7.8ms（4.3x）**。`python3 -`（stdin 脚本）5.3 倍同属无效（stdin 内容从未被捕获，该命令不可回放，撤回）。重计算型脚本只有 1.2–1.4x——诚实的下限：启动税占比小。
 3. **三个 agent 的行为画像不同**：claude 爱用 python 脚本做批量分析；kimi 更爱纯 shell 管道（kimi_D 几乎没有 python，cat×14 wc×7）；codex 重度使用 tr/cut 文本工具和 git，零 python（但其 node 运行时本身占据整个会话）。**zygote 对 claude 类行为收益最大，对 codex 类行为收益最小**——收益取决于 agent 的编码风格。
 4. **agent 也在为"找运行时"付费**：claude_B 中一次 `which` 耗时 76ms（大 PATH 扫描 shim 目录放大了这一点，但真实 agent 的长 PATH 同样存在）。
 5. 并发 burst（3×claude 同时）：未观察到显著延迟膨胀（3 会话远低于 20 核饱和线），与 exp1 的 100 会话饱和结论一致——**并发惩罚只在会话密度足够高时出现**。
 
 ## 全量回放汇总（13 条真实命令）
 
-python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms；其中测试/发现类命令收益最大（21x），重计算脚本收益最小（1.1x）。**真实负载下 zygote 对 python 调用的启动税削减约 24–76%，取决于任务中"启动:工作"的比例。**
+python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms。**勘误（第七轮）：该投影基于失效 replay，撤回。** 经等价校验的重测（`results/exp10_replay_v2.txt`）：unittest 4.3x、合成等效脚本 1.2–1.6x、混合 1.4x。**真实负载下 zygote 对 python 调用启动税的削减约 15–76%，取决于"启动:工作"比例；混合真实命令约 1.4x。**
 
 ## 四轮实验的最终判断
 
 1. 诊断成立且精确：**机器成本的构成是任务类型决定的**——python/node 启动税（A/B/C 类）+ coreutils 管道与大仓库元数据（D 类）。README 的原始清单里真正重要的就这两条。
-2. v0.1（Python zygote）有真实数据支撑的最大胜利场景是**测试循环和分析脚本**（5–21 倍单命令加速）；对 shell 管道型 agent（kimi/codex 风格）收益有限——这决定了 shim 的 PATH 优先级设计和"何时进 fast path"的启发式值得做（例如：只对 import 重的调用预热）。
+2. v0.1（Python zygote）有真实数据支撑的最大胜利场景是**测试循环和分析脚本**（经等价校验 3–7.5x 单命令加速，见第七轮）；对 shell 管道型 agent（kimi/codex 风格）收益有限——这决定了 shim 的 PATH 优先级设计和"何时进 fast path"的启发式值得做（例如：只对 import 重的调用预热）。
 3. Node 任务占耗时可达 50%+，Node 方案（snapshot）从"以后再说"上调为"第二优先"，但仍排在 Python 之后（fork 不安全，snapshot 需预热模块图）。
 4. workspace 缓存/共享索引（Phase 2）在 D 类任务上有真实需求信号（单条 sort/xargs 管道秒级）。
 5. 数据规模：14 会话 / 585 execve / 3 agent / 4 任务类型。仍建议持续采集（接入真实开发会话一个月），但立项所需的证据链已完整。
@@ -296,7 +296,7 @@ python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms；其中�
 |---|---|
 | 每次 exec 都 `docker run`（新建容器） | **300–400ms**（宿主机直接 exec 22ms）——容器创建开销主导，比启动税本身大 15–18 倍 |
 | 在**运行中的容器**里 exec python（`docker exec`） | 56ms（其中 ~30ms 是 docker exec 自己的开销，python 冷启动 ~20ms 与宿主机**一模一样**） |
-| 容器内 python 的 PSS | 17.2MB/实例，PSS≈RSS（除文件页外**零跨容器共享**）；10 个容器 = 172MB，zygote CoW 模型下同规模 ~17MB |
+| 容器内 python 的内存 | **勘误（第七轮）：原测量 0.0MB（进程已退出，测量失败）；exp13 用 docker stats 重测：12.4MB/实例**（cgroup 计费含 shim），比宿主机裸进程 6.5MB 更差——每实例固定开销，无跨容器去重；zygote 模型同规模 0.8–5.6MB/会话 |
 | 同镜像 N 个容器共享的部分 | 只有只读镜像层（文件-backed 页）——这与宿主机上共享 .so 是同一机制，不涉及运行时匿名堆 |
 
 ## 结论：容器与 AThread 是正交的两层，不互相替代
@@ -329,7 +329,7 @@ python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms；其中�
 | S3 30 会话稀疏模拟，python p50 / p95 | 22.5 / 25.2ms | **6.8 / 7.5ms** | 3.3x |
 | S3 同场景 test（unittest）p50 / p95 | 34.4 / 37.9ms | **7.8 / 9.2ms** | 4.4x |
 | S3 git / rg / cat | — | 与 baseline 完全一致（2.8/7.1/2.0ms） | 零回归 |
-| S4 20 并发 python 进程内存 | 78MB | **50MB（含守护进程）** | -36% |
+| S4 20 并发 python 进程内存 | ~~78MB~~ | ~~50MB（含守护进程）~~ | **勘误：系统级 PSS 增量法不可验证（daemon CoW 稀释+噪声）；exp13 全进程组口径：cold 129.5MB vs warm 111.6MB = -14%** |
 | S5 回退正确性（PYTHONPATH 设置时） | — | 输出正确、行为与真 python 一致 | ✅ |
 
 冒烟测试全过：argv（含空格）、-c/-m/脚本/stdin 四种形态、env/cwd 注入、exit code 传播（42/7 均正确）、SystemExit、子进程崩溃隔离、守护进程稳定运行。
@@ -346,3 +346,79 @@ python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms；其中�
 2. 单次 fast path 全链路 ~6-7ms（socket+fork+runpy+回收），比 exp6 理想 broker 的 2.7ms 多出的部分是真实产品的固有成本（完整 env 传递、fd 转发、runpy 语义对齐），这是诚实数字。
 3. 内存收益在真实形态下较小（-36%）因为这些子进程 sleep 且没做 exp7 那种重活；exp3/exp7 的 CoW 上限在会话真实工作时成立。
 4. v0.1 可以开始真实使用了：`athread install && athread start`，把三行 export 放进 agent 的 shell 启动即可。下一步是真实命中率统计（shim 侧计数 fast path / fallback 原因分布）和 Node 方案评估。
+
+---
+
+# 第七轮（2026-09-17）：外部审阅修正 + 三组决定方向的实验
+
+一次完整的外部技术审阅（阅读了全部代码、实验脚本、结果与 14 份 trace，并在隔离环境复现）发现：**实验可信度有四处硬伤、原型语义有六处透明性缺陷**。本轮全部修复并重测。原则：每次计时同时验证退出码/输出/副作用；不认识的场景执行前回退；不支持的结论撤回。
+
+## 勘误清单（旧结论 → 处置）
+
+| 旧结论 | 问题 | 处置 |
+|---|---|---|
+| 真实 unittest 回放 **21x** | replay 把 `-m` 当文件执行，失败立即返回 = 假加速（已复现） | **撤回**；真实 shim 重测 **4.3x**（rc+输出等价校验通过） |
+| stdin 脚本 **5.3x** | 同类 bug + stdin 内容从未被捕获 | **撤回**，标记不可回放 |
+| 内存节省 **-36%** | 系统级 PSS 增量法不可验证 | **撤回**；exp13 全进程组口径重测 **-14%** |
+| CoW 节省 **-89%/90%** | 只统计子进程、漏 warm root；人工写脏不代表真实堆 | 修正口径：真实原型 -14%；空闲子进程上限 -87%（仍标注为合成上界） |
+| 容器 python **17.2MB/实例** | 提交的原始数据是 0.0MB（进程已退出，测量失败） | exp13 用 docker stats 重测：**12.4MB/实例**，结论方向不变（容器加固定开销、无去重） |
+| trace **585 次 execve** | 110 行损坏被分析器静默跳过 | repair_logs 重切分：**510 次可恢复** + 106 孤儿 end 事件；分布结论不变 |
+
+## 原型语义修复（athread/，全部有差分测试锁定）
+
+审阅者在 macOS/Python 3.9.6 复现了 6 个透明性缺陷，均已修复并写入 `athread/parity_test.py`（24 项 cold-vs-warm 差分测试，断言 rc/stdout/stderr/文件副作用全等，全过）：
+
+| 缺陷 | 修复 |
+|---|---|
+| \>2s 的命令 ~2s 返回 125 | shim 的 2s 接收超时在 spawn 后不再适用，改为仅 connect 限时 |
+| atexit 清理被跳过 | 子进程退出前 `atexit._run_exitfuncs()`（warm root 启动时清空注册表避免误触发） |
+| SystemExit("msg") 丢信息 | 非 int code 打印到 stderr + rc 1，与 CPython 一致 |
+| 脚本无法 import 同目录模块 | sys.path[0] 改为脚本所在目录（原来是 cwd） |
+| `-c` 中 `__main__` 变量缺失 | 用真正的 `__main__` 模块对象 exec |
+| 300 参数被静默截断 | MAX_ARGV 256→4096，超限 fail-open 到真 python |
+| 附赠：traceback 不一致 | 过滤 daemon 内部帧 + linecache 喂源码，traceback 与冷启动逐字节一致 |
+
+## 三组决定方向的实验
+
+### 实验 A：真实会话命中率（`trace/expA_hit_rate.py`）
+
+对修复后的 510 次真实 execve 逐条套 shim 的准入规则：
+
+- **92% 的 python 调用可进 fast path**（11/12；唯一不合格的是 `python3 -` stdin 形态，venv 阻塞为 0）
+- **但 python 只占全部调用的 2.4%**（12/510）——本批任务以 git/cat/tr/wc 等 native 命令为主
+- 含义：v0.1 的价值密度取决于任务的 python 占比；修 bug/测试类任务密度最高，仓库批量分析类最低
+
+### 实验 B：固定真实轨迹的容量 A/B（`trace/exp14_trace_ab.py`）
+
+把 14 个真实会话的命令时间线（含思考间隔）在两种模式下原样重放：A=干净 PATH，B=shim PATH。逐命令等价校验（12 条 python 的 rc+stdout 全部 MATCH）。
+
+| 指标 | A baseline | B athread |
+|---|---|---|
+| 执行命令数 | 498 | 498 |
+| 总墙钟 | 19.7s | 19.6s（无差别——轨迹是 LLM 思考密集型） |
+| **CPU ticks（user+system）** | 727 | **655（-10%）** |
+| **python3 p50** | 70.4ms | **9.4ms（7.5x）** |
+| python3 p95 | 144.7ms | 143.5ms（p95 那条是重计算脚本，启动税占比小） |
+| git/cat/tr/wc | 基准 | p50/p95 完全一致，零回归 |
+
+含义：**在真实分析类轨迹上，AThread 把 python 延迟砍 87%（p50）、总 CPU 降 10%，对 native 命令零回归、结果逐字节等价**。墙钟不变是因为这类任务 99% 的时间在等 LLM——这正面回应了审阅的"量纲质疑"：收益不在单会话墙钟，在机器级 CPU/内存与高密度并发下的尾延迟（exp12 S3：30 会话时 python p50 3.2x）。
+
+### 实验 C：完整进程组内存收支（`scripts/exp13_memory_pl.py`）
+
+全部进程组口径（含 daemon/父进程/shim，验证清理无残留）：
+
+| 模型 | 20 并发会话总 PSS | 每会话 | vs cold |
+|---|---|---|---|
+| A 冷启动独立进程 | 129.5MB | 6.47MB | — |
+| **B 真实原型（shim+daemon+workers）** | **111.6MB** | 5.57MB | **-14%** |
+| C 合成 CoW 上限（空闲子进程） | 16.5MB | 0.82MB | -87%（仅当上界引用） |
+| D 容器（10 个，docker stats） | 124.1MB | 12.4MB/实例 | 比冷启动还差（固定开销、无去重） |
+
+含义：**真实形态下内存收益是 -14% 量级，不是 -89%**；-87% 只在子进程几乎不写内存时成立。审阅的质疑正确：收益取决于同时存活的 python 进程数，不能按 agent 会话数线性外推。容器每实例 12.4MB，再次确认容器是正交层。
+
+## 第七轮结论
+
+1. **修正后的净收益（有等价校验背书）**：python 单命令 p50 加速 3.2–7.5x（任务类型相关）；真实轨迹总 CPU -10%；20 并发内存 -14%；native 命令零回归；rc/输出/副作用与冷启动逐字节一致（24 项差分测试 + 498 命令回放全 MATCH）。
+2. **定位按审阅建议收窄**：当前有数据支撑的定位是"面向高频、短时、重 import 工作负载的 Python 预热执行器"；扩展回"Agent Runtime"需要先用门槛实验验证（见下）。
+3. **继续投入的门槛**（采纳审阅建议，预先设定）：目标场景每成功任务 CPU 降低 ≥15%，或固定延迟约束下吞吐提高 ≥20%，且结果等价、错误率不增加。当前：CPU -10%（未达线），单命令延迟与内存达标——下一步优先提升 python 调用密度场景（测试循环型任务）的端到端测量。
+4. **已撤回的 headline**：21x、5.3x、-36%、-89%、585 execs、容器 17.2MB。本报告所有在册数字以本轮及以后为准。

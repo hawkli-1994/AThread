@@ -857,27 +857,31 @@ The first milestone is simpler:
 
 ### Current evidence
 
-A four-round experimental study (synthetic benchmarks, an end-to-end zygote
-simulation, and execve traces from 14 real agent sessions across Claude Code,
-Kimi CLI, and Codex CLI) is available in [experiments/REPORT.md](experiments/REPORT.md).
+A seven-round experimental study (synthetic benchmarks, zygote simulations,
+execve traces from 14 real agent sessions across Claude Code, Kimi CLI, and
+Codex CLI, an external review with errata, and equivalence-checked replays)
+is available in [experiments/REPORT.md](experiments/REPORT.md).
 Headline findings:
 
 * Agent session cost is task-type dependent: Python/Node runtime startup tax
-  dominates analysis/test tasks (a warm-fork zygote cuts it 5–21x on real
-  commands such as `python -m unittest discover`), while large-repo text
-  pipelines (sort/xargs/wc) need shared indexing instead.
-* Copy-on-write warm runtimes retain 90%+ of their memory savings under
-  realistic per-session memory dirtying.
+  dominates analysis/test tasks (warm-fork cuts python command latency 3.2–7.5x
+  with byte-identical output), while large-repo text pipelines (sort/xargs/wc)
+  need shared indexing instead.
+* Memory savings with full process-group accounting: -14% for 20 concurrent
+  import-heavy python workers (a -87% synthetic CoW upper bound applies only
+  to near-idle children).
 * PTY overhead and memory/IO pressure were measured to be negligible on
   modern WSL2 — the original README diagnosis list is narrower in practice.
 
 ### Current prototype
 
 A working v0.1 lives in [athread/](athread/): `athreadd` (warm CPython root +
-fork broker) plus a transparent PATH shim with fail-open fallback. Measured
-end-to-end in [experiments/REPORT.md](experiments/REPORT.md) round 6:
-`python -m unittest discover` 4.8x faster (33.7ms -> 7.0ms), heavy-import
-`python -c` 3.4x, zero regression on native tools, correct fallback under
+fork broker) plus a transparent PATH shim with fail-open fallback. Held to a
+differential standard by [athread/parity_test.py](athread/parity_test.py)
+(24 cases asserting rc/stdout/stderr/side-effects identical to cold CPython).
+Measured end-to-end: `python -m unittest discover` 4.8x faster (34.2ms ->
+7.1ms), heavy-import `python -c` 3.6x, real-trace python p50 7.5x, total CPU
+-10%, zero regression on native tools, correct fallback under
 `VIRTUAL_ENV`/`PYTHONPATH`.
 
 ### Quick start
@@ -894,7 +898,7 @@ export PATH="$HOME/.athread/bin:$PATH"
 export ATHREAD_SOCK="$HOME/.athread/athreadd.sock"
 export ATHREAD_REAL_PYTHON="/usr/bin/python3"
 
-python3 -m unittest discover -s tests   # 33.7ms -> 7.0ms (4.8x)
+python3 -m unittest discover -s tests   # 34.2ms -> 7.1ms (4.8x, output-identical)
 ```
 
 Anything AThread does not recognize (`VIRTUAL_ENV`, `PYTHONPATH`, unknown
@@ -911,23 +915,27 @@ raw data: [experiments/REPORT.md](experiments/REPORT.md).
 
 | Workload | Baseline | AThread | Speedup |
 |---|---|---|---|
-| `python -m unittest discover` (test loop) | 33.7 ms | 7.0 ms | **4.8x** |
-| `python -c` heavy imports | 21.5 ms | 6.2 ms | **3.4x** |
-| Real command replay: `python -m unittest discover` | 64.2 ms | 3.1 ms | **21x** |
-| 30 sparse sessions, python p50 | 22.5 ms | 6.8 ms | 3.3x |
-| 30 sparse sessions, unittest p50 | 34.4 ms | 7.8 ms | 4.4x |
-| git / rg / cat (native tools) | unchanged | unchanged | no regression |
+| `python -m unittest discover` (test loop) | 34.2 ms | 7.1 ms | **4.8x** |
+| `python -c` heavy imports | 21.2 ms | 6.0 ms | **3.6x** |
+| Real-trace replay (equiv-checked): unittest discover | 33.7 ms | 7.8 ms | **4.3x** |
+| Real-trace A/B: python p50 over 498 replayed cmds | 70.4 ms | 9.4 ms | **7.5x** |
+| 30 sparse sessions, python / unittest p50 | 22.2 / 34.9 ms | 6.9 / 7.9 ms | 3.2x / 4.4x |
+| Real-trace A/B: total CPU, native tools | — | -10%, p50/p95 identical | no regression |
 
-| Memory | Baseline | AThread | Saving |
+| Memory (full process group, incl. daemon) | Baseline | AThread | Saving |
 |---|---|---|---|
-| 20 concurrent python processes | 78 MB | 50 MB | **-36%** |
-| 25 warm-fork sessions, PSS upper bound | 161.6 MB | 17.1 MB | **-89%** |
-| Same, after realistic per-session dirtying | — | — | **~90% retained** |
+| 20 concurrent import-heavy python procs | 129.5 MB | 111.6 MB | **-14%** |
+| Synthetic CoW upper bound (idle children) | 129.5 MB | 16.5 MB | -87% (upper bound only) |
+| Docker containers (10x python, docker stats) | — | 12.4 MB/instance | worse than bare metal |
 
-Key negative results that shaped the design: PTY overhead (~0.5 MB/session)
-and memory/IO pressure are negligible on modern WSL2; containers are an
-orthogonal layer and do not eliminate duplicated runtime init. Details in
-[experiments/REPORT.md](experiments/REPORT.md).
+All rows verified for **output equivalence** (rc/stdout/stderr byte-identical
+to cold python; 24-case differential suite `athread/parity_test.py` plus
+498-command trace replay, all MATCH). Hit rate on real agent traces: 92% of
+python calls are shim-eligible, but python is only 2.4% of invocations in
+repo-analysis tasks — the benefit density is task-type dependent. Earlier
+headlines (21x replay, -36%/-89% memory, 585 execs) were **retracted** after
+an external review found measurement errors; see
+[experiments/REPORT.md](experiments/REPORT.md) round 7 for the full errata.
 
 ---
 
