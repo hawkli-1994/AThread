@@ -1,0 +1,12 @@
+== 1) python cold-start: host vs inside container ==
+  host exec:                    22.2ms
+  docker run per exec:         400.5ms   (container creation dominates)
+  docker run (no network):     298.9ms
+
+== 2) exec inside a RUNNING container vs host (same kernel path) ==
+  docker exec (warm container):    56.0ms  vs host 22.2ms
+  container python: Python 3.13.15 | host python: 3.14.4
+
+== 3) memory: 10 containers each running python vs 10 host processes ==
+  10 containers (python + containerd-shim processes): total PSS 0.0 MB (0.00 MB/instance)
+  reference exp3: 10 host python processes would be ~65 MB PSS total (6.5 MB each)
