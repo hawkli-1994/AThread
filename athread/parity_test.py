@@ -117,10 +117,15 @@ def main():
         os.makedirs("pkg1/sub")
         with open("pkg1/helper.py", "w") as f:
             f.write("VALUE = 7\n")
+        with open("pkg1/sub/helper.py", "w") as f:
+            f.write("VALUE = 99\n")
         with open("pkg1/sub/main.py", "w") as f:
             f.write("import helper\nprint(helper.VALUE)\n")
-        diff_case("script imports same-dir module",
+        rc_c, rc_w = diff_case("script imports same-dir module (must SUCCEED)",
                   ["pkg1/sub/main.py"], cwd=td)
+        check("same-dir import prints 99 (not a mutual-failure pass)",
+              rc_c.stdout.strip() == "99" and rc_w.stdout.strip() == "99",
+              f"cold={rc_c.stdout!r} warm={rc_w.stdout!r}")
         diff_case("-c imports from cwd",
                   ["-c", "import sys; sys.path.insert(0,'pkg1'); import helper; print(helper.VALUE)"],
                   cwd=td)
@@ -128,6 +133,62 @@ def main():
             f.write("print('modx-ok')\n")
         diff_case("-m module from cwd", ["-m", "modx"], cwd=td)
         diff_case("-m package.module", ["-m", "pkg1.helper"], cwd=td)
+        diff_case("-m missing module: plain message, no traceback",
+                  ["-m", "definitely_missing_mod_xyz"])
+
+        print("-- exit callbacks, threads, buffered writers --")
+        # atexit handler that imports a module from the script's directory
+        with open("pkg1/sub/exitmain.py", "w") as f:
+            f.write("import atexit, helper\n"
+                    "atexit.register(lambda: print('exit-saw', helper.VALUE))\n"
+                    "print('body')\n")
+        diff_case("atexit handler imports same-dir module",
+                  ["pkg1/sub/exitmain.py"], cwd=td)
+        # non-daemon thread must complete its side effect before exit
+        diff_case("non-daemon thread side effect completes",
+                  ["-c",
+                   "import threading, pathlib\n"
+                   "def work():\n"
+                   "    pathlib.Path('thread_out.txt').write_text('thread-done')\n"
+                   "t = threading.Thread(target=work)\n"
+                   "t.start()\n"
+                   "t.join()\n"
+                   "print('joined')"])
+        # retained-reference buffered writer: content must survive exit
+        diff_case("buffered file writer flushed at exit",
+                  ["-c",
+                   "f = open('buf_out.txt', 'w')\n"
+                   "f.write('partial-line-no-newline')\n"
+                   "f.close()\n"
+                   "print('wrote')"])
+        for mode_dir, fn in (("cold_fx2", "buf_out.txt"), ("warm_fx2", "buf_out.txt")):
+            shutil.rmtree(mode_dir, ignore_errors=True)
+            os.makedirs(mode_dir)
+        c = run("cold", ["-c", "f=open('buf_out.txt','w'); f.write('partial'); f.close()"],
+                cwd=os.path.join(td, "cold_fx2"))
+        w = run("warm", ["-c", "f=open('buf_out.txt','w'); f.write('partial'); f.close()"],
+                cwd=os.path.join(td, "warm_fx2"))
+        check("retained buffer final content equal and non-empty",
+              open("cold_fx2/buf_out.txt").read() == open("warm_fx2/buf_out.txt").read() == "partial")
+
+        print("-- descendants, signals, large inputs --")
+        # script that spawns a grandchild; exit code propagation must match
+        diff_case("grandchild via subprocess",
+                  ["-c", "import subprocess,sys; "
+                         "sys.exit(subprocess.run([sys.executable,'-c','print(123)']).returncode)"])
+        # large environment
+        big_env_case = dict(WARM_ENV)
+        big_env_case["ATHREAD_BIG"] = "x" * 100000
+        e_cold = dict(COLD_ENV); e_cold["ATHREAD_BIG"] = "x" * 100000
+        r1 = subprocess.run(["python3", "-c", "import os; print(len(os.environ['ATHREAD_BIG']))"],
+                            env=e_cold, capture_output=True, text=True)
+        r2 = subprocess.run(["python3", "-c", "import os; print(len(os.environ['ATHREAD_BIG']))"],
+                            env=big_env_case, capture_output=True, text=True)
+        check("100KB env var survives both paths",
+              r1.stdout == r2.stdout == "100000\n", f"{r1.stdout!r}/{r2.stdout!r}")
+        # big stdout (64KB through the forwarded fd)
+        diff_case("64KB stdout through forwarded fd",
+                  ["-c", "print('x' * 65536)"])
 
         print("-- stdin script --")
         diff_case("stdin script", [], stdin="print('stdin-ok', __name__)\n")

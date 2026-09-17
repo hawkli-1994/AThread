@@ -38,6 +38,38 @@ def env_for(mode):
         e["PATH"] = CLEAN_PATH
     return e
 
+# worker dispatch MUST come before any experiment code: each S3 worker
+# re-executes this file and must not rerun S1/S2
+if len(sys.argv) > 1 and sys.argv[1] == "--session":
+    _out, _seed, _mode = sys.argv[2], int(sys.argv[3]), sys.argv[4]
+    _random, _time = random, time
+    _deadline = _time.monotonic() + 25
+    _recs = []
+    _MIX = [("py", 35), ("test", 10), ("git", 30), ("rg", 15), ("cat", 10)]
+    _PYCODE = "import json,re,subprocess,pathlib,argparse;d={i:[i]*10 for i in range(2000)};json.dumps(d)"
+    def _cmds_for(kind):
+        return {"py": ["python3", "-c", _PYCODE],
+                "test": ["python3", "-m", "unittest", "discover", "-s", "tests"],
+                "git": ["git", "status", "--porcelain"],
+                "rg": ["rg", "-n", "def foo", "-t", "py", "."],
+                "cat": ["cat", ".git/HEAD"]}[kind]
+    _random.seed(_seed)
+    while _time.monotonic() < _deadline:
+        _time.sleep(_random.uniform(0.4, 2.0))
+        if _time.monotonic() >= _deadline:
+            break
+        kind = _random.choices([k for k, _ in _MIX], [w for _, w in _MIX], k=1)[0]
+        cwd = BUGREPO if kind == "test" else REPO
+        t0 = _time.monotonic()
+        p = subprocess.run(_cmds_for(kind), cwd=cwd, env=env_for(_mode),
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        dt = (_time.monotonic() - t0) * 1000
+        _recs.append((kind, dt, p.returncode, p.stdout.decode(errors="replace")[:40]))
+    with open(_out, "w") as f:
+        for k, ms, rc, out in _recs:
+            f.write(f"{k} {ms:.1f} {rc} {out.replace(chr(10), '\\\\n')}\n")
+    sys.exit(0)
+
 def p50(xs): return statistics.median(xs) if xs else 0.0
 def pct(xs, q):
     xs = sorted(xs)
@@ -51,7 +83,9 @@ def bench(cmd, cwd, mode, n=15):
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         ts.append((time.monotonic() - t0) * 1000)
         rcs.append(p.returncode)
-        outs.append(hash(p.stdout + b"\0" + p.stderr))
+        import re as _re
+        norm = lambda b: _re.sub(rb"in \d+\.\d+s", b"in Ts", b)
+        outs.append(hash(norm(p.stdout) + b"\0" + norm(p.stderr)))
     return ts, rcs, outs
 
 def ensure_daemon():
@@ -81,62 +115,54 @@ print(f"  baseline p50 {p50(b):6.1f}ms  rc={sorted(set(brc))}")
 print(f"  athread  p50 {p50(a):6.1f}ms  rc={sorted(set(arc))}   ({p50(b)/p50(a):.1f}x p50, output+rc {eq})")
 
 print("\n-- S3: sparse multi-session sim (30 sessions x 25s, transparent PATH) --")
-DUR = 25
-MIX = [("py", 35), ("test", 10), ("git", 30), ("rg", 15), ("cat", 10)]
-PYCODE = "import json,re,subprocess,pathlib,argparse;d={i:[i]*10 for i in range(2000)};json.dumps(d)"
-def cmds_for(kind):
-    return {"py": ["python3", "-c", PYCODE],
-            "test": ["python3", "-m", "unittest", "discover", "-s", "tests"],
-            "git": ["git", "status", "--porcelain"],
-            "rg": ["rg", "-n", "def foo", "-t", "py", "."],
-            "cat": ["cat", ".git/HEAD"]}[kind]
-
-def session_main(out, seed, mode):
-    random.seed(seed)
-    deadline = time.monotonic() + DUR
-    recs = []
-    while time.monotonic() < deadline:
-        time.sleep(random.uniform(0.4, 2.0))
-        if time.monotonic() >= deadline:
-            break
-        kind = random.choices([k for k, _ in MIX], [w for _, w in MIX], k=1)[0]
-        cwd = BUGREPO if kind == "test" else REPO
-        t0 = time.monotonic()
-        subprocess.run(cmds_for(kind), cwd=cwd, env=env_for(mode),
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        recs.append((kind, (time.monotonic() - t0) * 1000))
-    with open(out, "w") as f:
-        for k, ms in recs:
-            f.write(f"{k} {ms:.1f}\n")
+# fast-path verification: the daemon's served counter must advance by
+# exactly the number of python calls in the athread run
+def served():
+    import re
+    r = subprocess.run([ATHREAD, "status"], capture_output=True, text=True)
+    m = re.search(r"served (\d+)", r.stdout)
+    return int(m.group(1)) if m else -1
 
 def run_sim(mode):
     tmpdir = f"/tmp/exp12_{mode}"
     os.makedirs(tmpdir, exist_ok=True)
     for f in os.listdir(tmpdir):
         os.unlink(os.path.join(tmpdir, f))
+    s0 = served() if mode == "athread" else None
     procs = [subprocess.Popen([sys.executable, __file__, "--session",
                                f"{tmpdir}/s{i}", str(i), mode],
                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
              for i in range(30)]
     for p in procs:
         p.wait()
-    lat = {}
+    s1 = served() if mode == "athread" else None
+    lat, rcs, outs = {}, {}, {}
+    n_py = 0
     for fn in os.listdir(tmpdir):
         for line in open(os.path.join(tmpdir, fn)):
-            k, ms = line.split()
-            lat.setdefault(k, []).append(float(ms))
-    return lat
+            parts = line.split(None, 3)
+            k, ms, rc = parts[0], float(parts[1]), int(parts[2])
+            lat.setdefault(k, []).append(ms)
+            rcs.setdefault(k, set()).add(rc)
+            if k in ("py", "test"):
+                n_py += 1
+    fastpath = None
+    if mode == "athread":
+        fastpath = (s1 - s0, n_py, s1 - s0 == n_py)
+    return lat, rcs, fastpath
 
-if len(sys.argv) > 1 and sys.argv[1] == "--session":
-    session_main(sys.argv[2], int(sys.argv[3]), sys.argv[4])
-    sys.exit(0)
-la = run_sim("athread")
-lb = run_sim("baseline")
+la, rca, fp = run_sim("athread")
+lb, rcb, _ = run_sim("baseline")
 for kind in ("py", "test", "git", "rg", "cat"):
     xa, xb = la.get(kind, []), lb.get(kind, [])
+    same_rc = rca.get(kind) == rcb.get(kind)
     print(f"  {kind:5s}  baseline p50 {p50(xb):6.1f} p95 {pct(xb,.95):6.1f} | "
           f"athread p50 {p50(xa):6.1f} p95 {pct(xa,.95):6.1f}"
-          + (f"  ({p50(xb)/max(p50(xa),0.01):.1f}x)" if kind in ("py", "test") else ""))
+          + (f"  ({p50(xb)/max(p50(xa),0.01):.1f}x)" if kind in ("py", "test") else "")
+          + f"  rc {'same' if same_rc else 'DIFFER'}")
+if fp:
+    print(f"  fast-path verification: daemon served +{fp[0]} forks for {fp[1]} "
+          f"python calls -> {'ALL via fast path' if fp[2] else 'MISMATCH (some fell back)'}")
 
 print("\n-- S4: memory — SUPERSEDED by exp13_memory_pl.py --")
 print("  system-wide PSS deltas are unverifiable (daemon CoW dilution + noise);")

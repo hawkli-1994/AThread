@@ -1,0 +1,26 @@
+== exp12: AThread v0.1 end-to-end (transparent PATH shim) ==
+
+-- S1: test loop (bugrepo, 15 runs each) --
+  baseline p50   34.4ms  total  0.52s  rc=[1]
+  athread  p50    7.3ms  total  0.11s  rc=[1]   (4.7x p50, output+rc OK)
+
+-- S2: heavy-import -c (repo, 15 runs each) --
+  baseline p50   21.9ms  rc=[0]
+  athread  p50    6.5ms  rc=[0]   (3.4x p50, output+rc OK)
+
+-- S3: sparse multi-session sim (30 sessions x 25s, transparent PATH) --
+  py     baseline p50   22.6 p95   25.9 | athread p50    7.0 p95    7.8  (3.2x)  rc same
+  test   baseline p50   35.1 p95   38.9 | athread p50    8.2 p95    8.9  (4.3x)  rc same
+  git    baseline p50    2.8 p95    3.3 | athread p50    2.8 p95    3.4  rc same
+  rg     baseline p50   11.0 p95   32.0 | athread p50   10.5 p95   32.4  rc same
+  cat    baseline p50    2.0 p95    2.2 | athread p50    2.1 p95    2.2  rc same
+  fast-path verification: daemon served +278 forks for 278 python calls -> ALL via fast path
+
+-- S4: memory — SUPERSEDED by exp13_memory_pl.py --
+  system-wide PSS deltas are unverifiable (daemon CoW dilution + noise);
+  full-process-group accounting: see results/exp13_memory_pl.txt
+
+-- S5: fallback (PYTHONPATH set) --
+  output=fallback-ok rc=0 (must be fallback-ok/0)
+
+done.

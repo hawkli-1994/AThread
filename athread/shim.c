@@ -110,7 +110,10 @@ int main(int argc, char **argv) {
     extern char **environ;
     int first = 1;
     for (char **e = environ; *e && first >= 0; e++) {
-        if (!strncmp(*e, "ATHREAD_", 8)) continue;
+        // strip only the vars the shim itself consumes, never user env
+        if (!strncmp(*e, "ATHREAD_SOCK=", 13) ||
+            !strncmp(*e, "ATHREAD_REAL_PYTHON=", 20))
+            continue;
         dprintf(tfd, "%s\"", first ? "" : ",");
         first = 0;
         jesc(tfd, *e);

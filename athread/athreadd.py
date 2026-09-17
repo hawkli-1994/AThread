@@ -144,7 +144,22 @@ def child_run(req, fds):
             sys.argv = [a[1]] + a[2:]                # run_module fixes argv[0]
             sys.path.insert(0, os.getcwd())          # real python -m adds cwd
             try:
-                runpy.run_module(a[1], run_name="__main__", alter_sys=True)
+                try:
+                    runpy.run_module(a[1], run_name="__main__", alter_sys=True)
+                except ImportError as e:
+                    # CPython prints a plain message (no traceback) only when
+                    # the TOP-LEVEL module is missing; nested import failures
+                    # keep the full traceback. runpy raises plain ImportError
+                    # with .name unset, so match the message (and the parent
+                    # package case, which CPython also reports plainly).
+                    _missing_msgs = (f"No module named {a[1]}",
+                                     f"No module named {a[1].split('.')[0]}")
+                    if getattr(e, "name", None) in (a[1], a[1].split(".")[0]) \
+                            or str(e) in _missing_msgs:
+                        mod = getattr(e, "name", None) or a[1].split(".")[0]
+                        sys.stderr.write(f"{sys.executable}: No module named {mod}\n")
+                        raise SystemExit(1)
+                    raise
             finally:
                 del sys.path[0]
         else:                                        # script path

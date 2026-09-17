@@ -116,17 +116,15 @@ def snapshot(root):
 
 def one_run(mode, argv, sandbox):
     env = WARM_ENV if mode == "warm" else COLD_ENV
-    before = snapshot(sandbox)
     t0 = time.monotonic()
     p = subprocess.run(argv, cwd=sandbox, env=env, capture_output=True, text=True, timeout=120)
     dt = (time.monotonic() - t0) * 1000
     after = snapshot(sandbox)
-    side_effects = {k: v for k, v in after.items() if k not in before} != {}
     # sandboxes differ per mode by construction; path reprs inside output
     # (tracebacks, pwd) are test artifacts, not behavior differences
     norm = lambda s: s.replace(sandbox, "<SB>")
     return {"rc": p.returncode, "out": norm(p.stdout), "err": norm(p.stderr),
-            "ms": dt, "side_effects": side_effects}
+            "ms": dt, "tree": {k.replace(sandbox, "<SB>"): v for k, v in after.items()}}
 
 def bench_pair(name, argv_builder, src, label):
     """Run cold & warm in fresh sandbox copies; check equivalence every rep."""
@@ -152,9 +150,10 @@ def bench_pair(name, argv_builder, src, label):
                       f"out {c['out'][:60]!r}/{w['out'][:60]!r} "
                       f"err {c['err'][:60]!r}/{w['err'][:60]!r}")
             break
-        if c["side_effects"] != w["side_effects"]:
+        if c["tree"] != w["tree"]:
             equiv = False
-            detail = f"rep{rep}: side-effect presence differs cold={c['side_effects']} warm={w['side_effects']}"
+            only_c = set(c["tree"].items()) ^ set(w["tree"].items())
+            detail = f"rep{rep}: sandbox tree content differs: {list(only_c)[:2]}"
             break
     pc, pw = statistics.median(cold_ms), statistics.median(warm_ms)
     sp = pc / pw if pw > 0 else float("nan")

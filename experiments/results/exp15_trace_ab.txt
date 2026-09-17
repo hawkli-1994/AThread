@@ -1,0 +1,28 @@
+
+== exp15 summary (scale=1.0: original rhythm) ==
+wall: A 688.7s  B 688.6s
+coverage: skipped A=23 B=23 (mismatch: onlyA=0 onlyB=0)
+  skip[ 10]: bin 'node' out of v0.1 scope (skipped in both modes)
+  skip[  8]: agent-written /tmp script lost
+  skip[  4]: bin 'npm' out of v0.1 scope (skipped in both modes)
+  skip[  1]: stdin script content lost at trace time
+host-state probes excluded from pairing: 35
+  probe[26]: clock output
+  probe[8]: env introspection (harness vars/PATH differ by construction)
+  probe[1]: PATH-dependent output (PATH differs by construction)
+paired commands: 454
+  equivalent: 450
+  DIVERGENT: 4
+  DIVERGENT claude_A_wrongcwd-1133310-31 [rg] output cold=ok warm=ok
+  DIVERGENT claude_A_wrongcwd-1133690-35 [rg] output cold=ok warm=ok
+  DIVERGENT claude_B-1192328-7 [ls] output cold=ok warm=ok
+  DIVERGENT kimi_B-1194395-3 [python3] output cold=failure warm=failure
+CPU (sum of per-command child rusage): A 1868ms  B 1874ms  (-0%)
+command wall sum: A 3367ms  B 3387ms
+per-bin wall p50 (A vs B):
+  python3     41.6 ->    10.8ms   (n=3)
+  git          5.6 ->     5.6ms   (n=94)
+  cat          5.6 ->     5.7ms   (n=63)
+  tr           5.5 ->     5.6ms   (n=63)
+  wc           5.6 ->     5.6ms   (n=46)
+final sandbox tree: all equal across modes
