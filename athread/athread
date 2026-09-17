@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""athread CLI (v0.1): manage the warm runtime daemon and shims.
+
+  athread start     start athreadd (warm python root + fork broker)
+  athread stop      stop the daemon
+  athread status    daemon status (uptime, served count, warm modules)
+  athread install   build shim and install into ~/.athread/bin (python3, python)
+  athread doctor    show configuration and check prerequisites
+"""
+import json, os, socket, subprocess, sys, time
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+HOME = os.path.expanduser("~")
+STATE = os.environ.get("ATHREAD_STATE_DIR", os.path.join(HOME, ".athread"))
+SOCK = os.path.join(STATE, "athreadd.sock")
+PIDF = os.path.join(STATE, "athreadd.pid")
+BIN = os.path.join(STATE, "bin")
+SHIM = os.path.join(BIN, "athread-shim")
+
+
+def daemon_alive():
+    if not os.path.exists(SOCK):
+        return False
+    try:
+        s = socket.socket(socket.AF_UNIX)
+        s.settimeout(1)
+        s.connect(SOCK)
+        s.sendall(b'{"cmd":"status"}\n')
+        data = s.recv(4096)
+        s.close()
+        return b'"status"' in data
+    except OSError:
+        return False
+
+
+def start():
+    os.makedirs(STATE, exist_ok=True)
+    if daemon_alive():
+        print("athreadd already running")
+        return 0
+    env = dict(os.environ)
+    env["PYTHONHASHSEED"] = "0"          # deterministic hash order for children
+    env.pop("VIRTUAL_ENV", None)
+    env.pop("PYTHONPATH", None)
+    logf = open(os.path.join(STATE, "athreadd.log"), "ab")
+    p = subprocess.Popen([sys.executable, os.path.join(HERE, "athreadd.py"), "run"],
+                         stdin=subprocess.DEVNULL, stdout=logf, stderr=logf,
+                         start_new_session=True, env=env)
+    for _ in range(100):
+        if daemon_alive():
+            print(f"athreadd started (pid {p.pid}), socket {SOCK}")
+            return 0
+        time.sleep(0.1)
+    print("athreadd failed to start, see", os.path.join(STATE, "athreadd.log"))
+    return 1
+
+
+def stop():
+    if not os.path.exists(PIDF):
+        print("not running")
+        return 0
+    try:
+        pid = int(open(PIDF).read().strip())
+        os.kill(pid, 15)
+    except (ProcessLookupError, ValueError):
+        os.unlink(PIDF)
+        print("athreadd stopped (stale pidfile)")
+        return 0
+    for _ in range(50):
+        if not os.path.exists(SOCK):
+            print("athreadd stopped")
+            return 0
+        time.sleep(0.1)
+    print("did not stop cleanly")
+    return 1
+
+
+def status():
+    if not daemon_alive():
+        print("athreadd: not running")
+        return 1
+    s = socket.socket(socket.AF_UNIX)
+    s.settimeout(2)
+    s.connect(SOCK)
+    s.sendall(b'{"cmd":"status"}\n')
+    out = json.loads(s.recv(8199).split(b"\n")[0])
+    print(f"athreadd pid {out['pid']} | up {out['uptime_s']}s | "
+          f"served {out['served']} | warm modules {out['warm_modules']} | "
+          f"python {out['python']} | PYTHONHASHSEED={out['hash_seed']}")
+    return 0
+
+
+def install():
+    os.makedirs(BIN, exist_ok=True)
+    r = subprocess.run(["gcc", "-O2", "-o", SHIM, os.path.join(HERE, "shim.c")])
+    if r.returncode != 0:
+        print("shim build failed (gcc missing?)")
+        return 1
+    for name in ("python3", "python"):
+        link = os.path.join(BIN, name)
+        if os.path.islink(link) or os.path.exists(link):
+            os.unlink(link)
+        os.symlink(SHIM, link)
+    real = subprocess.run(["bash", "-c", "command -v python3"],
+                          capture_output=True, text=True).stdout.strip() or "/usr/bin/python3"
+    print(f"installed shims: {BIN}/python3 -> {SHIM}")
+    print(f"real interpreter (fallback): {real}")
+    print()
+    print("to enable for a session:")
+    print(f'  export PATH="{BIN}:$PATH"')
+    print(f'  export ATHREAD_SOCK="{SOCK}"')
+    print(f'  export ATHREAD_REAL_PYTHON="{real}"')
+    return 0
+
+
+def doctor():
+    print("AThread v0.1 (warm runtime)")
+    print(f"  state dir      {STATE}")
+    print(f"  daemon socket  {SOCK}  ({'alive' if daemon_alive() else 'not running'})")
+    print(f"  shims          {BIN}/  ({'installed' if os.path.exists(SHIM) else 'not installed'})")
+    warm = os.path.join(STATE, "warm_modules.txt")
+    print(f"  warm config    {warm}  ({'custom' if os.path.exists(warm) else 'defaults'})")
+    print("  fast path      python3 [-c | -m | script | stdin]")
+    print("  fallback       VIRTUAL_ENV / PYTHONPATH / CONDA_PREFIX set,"
+          " unknown flags, daemon down")
+    return 0
+
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "doctor"
+    sys.exit({"start": start, "stop": stop, "status": status,
+              "install": install, "doctor": doctor}.get(cmd, doctor)())

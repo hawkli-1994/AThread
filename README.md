@@ -869,6 +869,15 @@ Headline findings:
 * PTY overhead and memory/IO pressure were measured to be negligible on
   modern WSL2 — the original README diagnosis list is narrower in practice.
 
+### Current prototype
+
+A working v0.1 lives in [athread/](athread/): `athreadd` (warm CPython root +
+fork broker) plus a transparent PATH shim with fail-open fallback. Measured
+end-to-end in [experiments/REPORT.md](experiments/REPORT.md) round 6:
+`python -m unittest discover` 4.8x faster (33.7ms -> 7.0ms), heavy-import
+`python -c` 3.4x, zero regression on native tools, correct fallback under
+`VIRTUAL_ENV`/`PYTHONPATH`.
+
 ---
 
 ## License

@@ -311,3 +311,38 @@ python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms；其中�
 **反向注意**：microVM 路线（Firecracker/gVisor）在上述每个维度上更差（独立内核、无 page cache 共享、无跨 VM KSM）。
 
 **互补关系**：AThread 不与容器竞争。它住在容器**下面**（对容器内的 exec 同样生效——容器里的 python 冷启动还是 20ms，zygote shim 放进镜像即可）或**旁边**（每个容器一个 zygote，CoW 收益在每个容器内部依然成立）。正确的架构是：容器做围栏，AThread 做围栏内的发动机。
+
+---
+
+# 第六轮（2026-09-17）：v0.1 原型落地与透明端到端验证
+
+把 exp6/exp9 验证过的机制产品化为可运行的原型 `athread/`（`athreadd.py` 守护进程 + C shim + CLI），**agent 视角完全透明**：会话只是正常执行 `python3 ...`，由 PATH 决定走 shim 还是真二进制。
+
+实现要点：shim 做资格检查（`-c`/`-m`/脚本/stdin 且无 VIRTUAL_ENV/PYTHONPATH/CONDA_PREFIX），通过 unix socket + SCM_RIGHTS 把 argv/env/cwd 和 fd 0/1/2 交给守护进程；守护进程从预热解释器 fork 子进程执行；任何疑点一律回退真 exec（fail-open）。子进程退出通过 SIGCHLD→pipe 唤醒 select 即时回收。语义对齐 CPython（argv、`-m` 时 cwd 入 sys.path、stdout flush 后 `_exit`）。
+
+## exp12 结果（透明 PATH shim，本机实测）
+
+| 场景 | baseline | athread | 加速 |
+|---|---|---|---|
+| S1 `python -m unittest discover` 循环（15 次） | 33.7ms p50 / 0.52s | **7.0ms p50 / 0.11s** | **4.8x** |
+| S2 重 import `python -c` | 21.5ms | **6.2ms** | **3.4x** |
+| S3 30 会话稀疏模拟，python p50 / p95 | 22.5 / 25.2ms | **6.8 / 7.5ms** | 3.3x |
+| S3 同场景 test（unittest）p50 / p95 | 34.4 / 37.9ms | **7.8 / 9.2ms** | 4.4x |
+| S3 git / rg / cat | — | 与 baseline 完全一致（2.8/7.1/2.0ms） | 零回归 |
+| S4 20 并发 python 进程内存 | 78MB | **50MB（含守护进程）** | -36% |
+| S5 回退正确性（PYTHONPATH 设置时） | — | 输出正确、行为与真 python 一致 | ✅ |
+
+冒烟测试全过：argv（含空格）、-c/-m/脚本/stdin 四种形态、env/cwd 注入、exit code 传播（42/7 均正确）、SystemExit、子进程崩溃隔离、守护进程稳定运行。
+
+## 两个实现教训（已修复，写在这里防止重蹈）
+
+1. **`os._exit` 跳过 stdio flush**——子进程 stdout 管道模式下块缓冲，退出前必须显式 flush（stderr 无缓冲所以最早只发现 stdout 丢）。
+2. **select 超时周期 = 每个请求的固定延迟税**——第一版用 250ms select 超时等回收，所有 fast path 请求被拖慢 12 倍（253ms 恒定延迟）。正解是 SIGCHLD → `signal.set_wakeup_fd` 管道唤醒 select。
+3. 另一个隐蔽 bug：daemon 里已完成请求的 conn 关闭后未从 selector 注销，fd 号复用导致 KeyError 崩溃——shim 的 2s 超时把它伪装成了"偶发慢"。
+
+## 第六轮结论
+
+1. **收益在真实透明路径下成立**：测试循环 4.8x、重 import 3.4x、稀疏多会话 p50 3.3–4.4x，native 命令零回归，回退语义正确。
+2. 单次 fast path 全链路 ~6-7ms（socket+fork+runpy+回收），比 exp6 理想 broker 的 2.7ms 多出的部分是真实产品的固有成本（完整 env 传递、fd 转发、runpy 语义对齐），这是诚实数字。
+3. 内存收益在真实形态下较小（-36%）因为这些子进程 sleep 且没做 exp7 那种重活；exp3/exp7 的 CoW 上限在会话真实工作时成立。
+4. v0.1 可以开始真实使用了：`athread install && athread start`，把三行 export 放进 agent 的 shell 启动即可。下一步是真实命中率统计（shim 侧计数 fast path / fallback 原因分布）和 Node 方案评估。

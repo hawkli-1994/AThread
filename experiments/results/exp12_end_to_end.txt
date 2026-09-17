@@ -1,0 +1,25 @@
+== exp12: AThread v0.1 end-to-end (transparent PATH shim) ==
+
+-- S1: test loop (bugrepo, 15 runs each) --
+  baseline p50   33.7ms  total  0.52s
+  athread  p50    7.0ms  total  0.11s   (4.8x p50)
+
+-- S2: heavy-import -c (repo, 15 runs each) --
+  baseline p50   21.5ms
+  athread  p50    6.2ms   (3.4x p50)
+
+-- S3: sparse multi-session sim (30 sessions x 25s, transparent PATH) --
+  py     baseline p50   22.5 p95   25.2 | athread p50    6.8 p95    7.5  (3.3x)
+  test   baseline p50   34.4 p95   37.9 | athread p50    7.8 p95    9.2  (4.4x)
+  git    baseline p50    2.8 p95    3.2 | athread p50    2.8 p95    3.2
+  rg     baseline p50    7.1 p95    8.4 | athread p50    7.2 p95    8.6
+  cat    baseline p50    2.0 p95    2.2 | athread p50    2.0 p95    2.3
+
+-- S4: memory, 20 concurrent python via shim vs 20 cold --
+  20 shim python procs + daemon: +50 MB total
+  20 cold python procs:          +78 MB total
+
+-- S5: fallback (PYTHONPATH set) --
+  output=fallback-ok rc=0 (must be fallback-ok/0)
+
+done.
