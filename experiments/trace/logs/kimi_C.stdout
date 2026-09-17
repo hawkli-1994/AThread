@@ -1,0 +1,7 @@
+• 全部完成：
+
+  1. **确认失败**:`mean([1, 2, 4])` 断言失败，期望约 2.333333，实际是 2。
+  2. **修复**:bug 在 `src/utils.js:9`,`mean` 用了 `Math.floor` 把结果截断成整数。已改为直接返回 `sum(list) / list.length`。
+  3. **验证**：重新运行 `npm test`，输出 `ALL TESTS PASSED`。
+  4. 未改动 `test.js`，未安装任何新依赖。
+

@@ -1,0 +1,17 @@
+== cold exec (median of 150) ==
+bash -c true                               p50=   0.68ms  p95=   0.76ms
+/usr/bin/true (pure exec)                  p50=   0.33ms  p95=   0.38ms
+git --version                              p50=   0.61ms  p95=   0.71ms
+rg --version                               p50=   0.52ms  p95=   0.62ms
+python3 -c pass                            p50=   8.03ms  p95=   8.80ms
+python3 -c 'import json,re'                p50=  20.03ms  p95=  22.35ms
+node -e 0                                  p50=  15.92ms  p95=  19.38ms
+
+== warm fork+exit from pre-initialized parent (simulates prefork) ==
+python parent (imports loaded) fork+exit   p50=   0.59ms  p95=   0.67ms
+warm fork + exec bash -c true              p50=   1.40ms  p95=   1.50ms
+
+== startup overhead breakdown ==
+python import cost (json,re,subprocess,pathlib,argparse): 12.00ms
+prefork saving per python-with-imports exec: 19.44ms (97%)
+prefork saving per bash exec (warm fork+exec vs cold): -0.72ms

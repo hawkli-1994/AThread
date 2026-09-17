@@ -1,0 +1,109 @@
+===== exp6 (fixed rg+python) =====
+{
+ "condition": "A_baseline",
+ "sessions": 100,
+ "wall_s": 43.2,
+ "total_cmds": 2239,
+ "cmds_per_session": 22.4,
+ "python_cmds": 376,
+ "fork_rate_per_s": 315.3,
+ "ctxt_per_s": 79681.6,
+ "cpu_busy_cores_avg": 1.76,
+ "p50_all": 6.06,
+ "p95_all": 20.59,
+ "p99_all": 23.35,
+ "python_p50": 19.79,
+ "python_p95": 23.25,
+ "python_p99": 26.52,
+ "latency_by_cmd_p50": {
+  "bash": 1.02,
+  "cat": 1.91,
+  "git": 2.61,
+  "node": 17.2,
+  "python": 19.79,
+  "rg": 6.8
+ }
+}
+{
+ "condition": "B_athread_sim",
+ "sessions": 100,
+ "wall_s": 43.3,
+ "total_cmds": 2244,
+ "cmds_per_session": 22.4,
+ "python_cmds": 377,
+ "fork_rate_per_s": 310.2,
+ "ctxt_per_s": 106150.4,
+ "cpu_busy_cores_avg": 1.88,
+ "p50_all": 2.72,
+ "p95_all": 17.8,
+ "p99_all": 20.48,
+ "python_p50": 2.7,
+ "python_p95": 3.25,
+ "python_p99": 4.37,
+ "latency_by_cmd_p50": {
+  "bash": 1.05,
+  "cat": 1.91,
+  "git": 2.6,
+  "node": 17.49,
+  "python": 2.7,
+  "rg": 6.75
+ }
+}
+saved: /home/krli/belllab/AThread/experiments/results/exp6_sparse_duty.json
+
+===== exp7 (fixed template) =====
+n=25 sessions, warm root pre-imported (json,re) + 8MB heap-ish structure
+independent processes total PSS: 1720.8 MB  (68.83 MB/session)
+CoW children, dirty  0 MB/session: total PSS   71.2 MB  (2.85 MB/session)  saving vs independent: 96%
+CoW children, dirty  1 MB/session: total PSS   95.8 MB  (3.83 MB/session)  saving vs independent: 94%
+CoW children, dirty  4 MB/session: total PSS  167.9 MB  (6.72 MB/session)  saving vs independent: 90%
+CoW children, dirty 16 MB/session: total PSS  456.2 MB  (18.25 MB/session)  saving vs independent: 73%
+
+===== exp8 (fixed rg path) =====
+bigrepo exists, reusing
+== steady state (after warm-up) ==
+  git status --porcelain     p50    21.49ms  p95    24.44ms
+  git status                 p50    22.07ms  p95    25.58ms
+  git diff --stat            p50     8.86ms  p95     9.45ms
+  rg -l def .                p50    71.22ms  p95    75.66ms
+  rg -l def -t py .          p50    73.29ms  p95    75.65ms
+  find . -name '*.py'        p50    16.68ms  p95    18.52ms
+
+== concurrent from 30 'agents' ==
+  30x concurrent git status --porcelain: wall 166ms, per-call p50 119.47ms
+Traceback (most recent call last):
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 75, in <module>
+    w, m = conc(lambda: t_sh(["rg", "-l", "def", "--type", "py"]))
+           ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 71, in conc
+    ts = list(ex.map(lambda _: fn(), range(30)))
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 639, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 311, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 443, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 395, in __get_result
+    raise self._exception
+  File "/usr/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 71, in <lambda>
+    ts = list(ex.map(lambda _: fn(), range(30)))
+                               ~~^^
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 75, in <lambda>
+    w, m = conc(lambda: t_sh(["rg", "-l", "def", "--type", "py"]))
+                        ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 43, in t_sh
+    subprocess.run(argv, cwd=BIG, stdout=subprocess.DEVNULL,
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   stderr=subprocess.DEVNULL, check=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['rg', '-l', 'def', '--type', 'py']' returned non-zero exit status 1.

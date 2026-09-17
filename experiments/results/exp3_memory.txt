@@ -1,0 +1,13 @@
+== A) 25 independent python processes (each imports common agent-stack libs) ==
+  total RSS 327.9 MB | total PSS 161.6 MB
+  per-proc PSS min/avg/max: 6.5/6.5/6.5 MB
+  already-shared (RSS-PSS, file-backed text pages): 166.4 MB (51% of RSS — kernel already dedupes code)
+
+== B) 25 children forked from one pre-imported parent (AThread CoW snapshot model) ==
+  found 25 CoW children of pid 466274
+  total RSS 244.5 MB | total PSS 17.1 MB
+
+== result ==
+  independent total PSS: 161.6 MB
+  CoW snapshot total PSS: 17.1 MB
+  saving: 144.5 MB (89%) ~ 5.78 MB per session

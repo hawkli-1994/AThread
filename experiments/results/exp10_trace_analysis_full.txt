@@ -1,0 +1,92 @@
+
+== burst1 ==  execs=22 session_wall=81s trace_span=81s
+   python: 1 execs (5%), 101ms (66% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×7, cat×4, grep×3, date×2, head×2, env×1, ls×1, wc×1, python3×1
+   top bins by time:  python3=101ms, git=25ms, cat=6ms, wc=5ms, date=5ms, head=4ms, env=3ms, grep=3ms
+
+== burst2 ==  execs=35 session_wall=73s trace_span=73s
+   python: 1 execs (3%), 44ms (26% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×8, grep×4, cat×4, head×3, wc×3, date×2, sed×2, ls×2, sort×2, env×1, cut×1, python3×1
+   top bins by time:  python3=44ms, git=31ms, sort=18ms, head=15ms, wc=12ms, awk=11ms, uniq=10ms, cat=6ms
+
+== burst3 ==  execs=31 session_wall=48s trace_span=48s
+   python: 1 execs (3%), 65ms (49% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×7, cat×7, grep×4, head×4, date×2, sed×2, env×1, cut×1, awk×1, ls×1, python3×1
+   top bins by time:  python3=65ms, git=32ms, cat=11ms, head=7ms, date=5ms, grep=4ms, env=2ms, ls=2ms
+
+== claude_A ==  execs=57 session_wall=98s trace_span=98s
+   python: 1 execs (2%), 366ms (68% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: wc×21, cat×9, git×7, grep×3, head×3, date×2, sed×2, ls×2, sort×2, env×1, cut×1, tail×1
+   top bins by time:  python3=366ms, wc=58ms, git=27ms, head=15ms, sort=15ms, cat=14ms, date=9ms, uniq=8ms
+
+== claude_A_wrongcwd ==  execs=44 session_wall=?s trace_span=119s
+   python: 1 execs (2%), 465ms (63% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×12, cat×7, head×5, sort×5, wc×3, grep×2, awk×2, rg×2, date×1, env×1, ls×1, uniq×1
+   top bins by time:  python3=465ms, sort=68ms, head=65ms, rg=49ms, awk=20ms, git=17ms, wc=11ms, cat=10ms
+
+== claude_B ==  execs=39 session_wall=196s trace_span=196s
+   python: 2 execs (5%), 90ms (40% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×10, head×7, grep×4, cat×4, ls×3, date×2, sed×2, python3×2, env×1, cut×1, awk×1, which×1
+   top bins by time:  python3=90ms, which=76ms, head=18ms, git=11ms, ls=8ms, cat=6ms, date=5ms, grep=4ms
+
+== claude_C ==  execs=32 session_wall=35s trace_span=35s
+   python: 0 execs (0%), 0ms (0% of cmd time)
+   node:   4 execs, 227ms
+   top bins by count: git×6, cat×4, node×4, grep×3, head×3, date×2, sed×2, ls×2, npm×2, sh×2, env×1, cut×1
+   top bins by time:  node=227ms, npm=189ms, sh=45ms, cat=7ms, git=6ms, date=5ms, head=5ms, ls=5ms
+
+== claude_D ==  execs=38 session_wall=139s trace_span=139s
+   python: 2 execs (5%), 730ms (16% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×7, cat×7, wc×5, head×4, grep×3, date×2, ls×2, sort×2, python3×2, env×1, cut×1, sed×1
+   top bins by time:  sort=1405ms, wc=749ms, python3=730ms, head=709ms, awk=689ms, git=390ms, cat=11ms, date=5ms
+
+== codex_B ==  execs=73 session_wall=?s trace_span=686s
+   python: 0 execs (0%), 0ms (0% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: tr×35, cut×20, git×12, wc×2, date×1, grep×1, awk×1, sed×1
+   top bins by time:  tr=57ms, cut=33ms, git=11ms, wc=4ms, date=2ms, awk=1ms, sed=1ms, grep=1ms
+
+== codex_D ==  execs=65 session_wall=505s trace_span=505s
+   python: 0 execs (0%), 0ms (0% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: tr×28, cut×16, git×12, date×2, grep×2, sed×2, wc×2, awk×1
+   top bins by time:  git=189ms, tr=48ms, cut=28ms, date=5ms, wc=4ms, sed=2ms, grep=1ms, awk=1ms
+
+== kimi_A ==  execs=19 session_wall=87s trace_span=87s
+   python: 1 execs (5%), 152ms (67% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×4, cat×3, date×2, grep×2, ls×2, wc×2, head×1, python3×1, find×1, rm×1
+   top bins by time:  python3=152ms, date=20ms, git=16ms, find=14ms, rm=9ms, cat=4ms, wc=4ms, ls=3ms
+
+== kimi_B ==  execs=8 session_wall=93s trace_span=94s
+   python: 1 execs (12%), 9ms (17% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: date×2, grep×2, tail×2, python3×1, git×1
+   top bins by time:  tail=38ms, python3=9ms, date=5ms, grep=2ms, git=1ms
+
+== kimi_C ==  execs=12 session_wall=53s trace_span=53s
+   python: 0 execs (0%), 0ms (0% of cmd time)
+   node:   4 execs, 221ms
+   top bins by count: node×4, date×2, grep×2, npm×2, sh×2
+   top bins by time:  node=221ms, npm=186ms, sh=41ms, date=5ms, grep=1ms
+
+== kimi_D ==  execs=35 session_wall=40s trace_span=40s
+   python: 1 execs (3%), 298ms (6% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: cat×14, wc×7, grep×4, date×2, find×2, xargs×2, git×1, tail×1, head×1, python3×1
+   top bins by time:  xargs=1551ms, tail=1029ms, cat=957ms, wc=851ms, grep=526ms, python3=298ms, git=180ms, date=5ms
+
+== ALL AGENTS combined ==
+bins by count: git×94, cat×63, tr×63, wc×46, cut×42, grep×39, head×33, date×26, ls×16, sed×14, python3×12, sort×11, env×8, awk×8, node×8
+bins by time:  python3=2319ms, wc=1698ms, xargs=1551ms, sort=1505ms, tail=1069ms, cat=1033ms, git=937ms, head=841ms, awk=724ms, grep=561ms
+python3: 12 execs (2% of execs), 2319ms (17% of cmd time)
+node: 8 execs (2% of execs), 449ms (3% of cmd time)
+
+replay candidates: 13 unique python/node commands -> /home/krli/belllab/AThread/experiments/trace/logs/replay_list.json

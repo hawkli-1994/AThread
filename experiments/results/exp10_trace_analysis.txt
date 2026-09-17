@@ -1,0 +1,26 @@
+
+== claude_A ==  execs=57 session_wall=98s trace_span=98s
+   python: 1 execs (2%), 366ms (68% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: wc×21, cat×9, git×7, grep×3, head×3, date×2, sed×2, ls×2, sort×2, env×1, cut×1, tail×1
+   top bins by time:  python3=366ms, wc=58ms, git=27ms, head=15ms, sort=15ms, cat=14ms, date=9ms, uniq=8ms
+
+== claude_A_wrongcwd ==  execs=44 session_wall=?s trace_span=119s
+   python: 1 execs (2%), 465ms (63% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×12, cat×7, head×5, sort×5, wc×3, grep×2, awk×2, rg×2, date×1, env×1, ls×1, uniq×1
+   top bins by time:  python3=465ms, sort=68ms, head=65ms, rg=49ms, awk=20ms, git=17ms, wc=11ms, cat=10ms
+
+== kimi_A ==  execs=19 session_wall=87s trace_span=87s
+   python: 1 execs (5%), 152ms (67% of cmd time)
+   node:   0 execs, 0ms
+   top bins by count: git×4, cat×3, date×2, grep×2, ls×2, wc×2, head×1, python3×1, find×1, rm×1
+   top bins by time:  python3=152ms, date=20ms, git=16ms, find=14ms, rm=9ms, cat=4ms, wc=4ms, ls=3ms
+
+== ALL AGENTS combined ==
+bins by count: wc×26, git×23, cat×19, head×9, grep×7, sort×7, date×5, ls×5, rg×3, python3×3, env×2, sed×2, uniq×2, awk×2, rm×2
+bins by time:  python3=983ms, sort=83ms, head=81ms, wc=73ms, git=60ms, rg=56ms, date=36ms, cat=28ms, awk=20ms, rm=18ms
+python3: 3 execs (2% of execs), 983ms (65% of cmd time)
+node: 0 execs (0% of execs), 0ms (0% of cmd time)
+
+replay candidates: 3 unique python/node commands -> /home/krli/belllab/AThread/experiments/trace/logs/replay_list.json

@@ -1,0 +1,14 @@
+== A) git status x60 sequential (same process, warm cache) ==
+  first call 3.07ms | steady-state p50 1.98ms p95 2.35ms
+  total CPU time burned: 0.12s for 60 identical answers
+
+== B) git diff/log/branch steady-state ==
+  git diff     p50   1.40ms  p95   1.48ms
+  git log      p50   0.84ms  p95   1.03ms
+  git branch   p50   0.74ms  p95   0.83ms
+
+== C) concurrent git status from 50 'agents' ==
+  wall 26ms for 50 concurrent | per-call p50 4.49ms p95 7.43ms
+
+== D) prototype: shared workspace metadata cache (mtime-keyed) ==
+  59/60 calls served from shared cache (0ms); avg 0.039ms vs uncached 1.98ms -> 98.0% latency saved when shared across agents

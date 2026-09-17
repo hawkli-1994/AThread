@@ -1,0 +1,197 @@
+{
+ "sessions": 1,
+ "wall_s": 20.04,
+ "cmds_per_session": 3060.0,
+ "fork_rate_per_s": 334.0,
+ "ctxt_per_s": 10406.5,
+ "cpu_busy_pct": 100.6,
+ "psi_cpu_us_per_s": 2296.7,
+ "psi_io_us_per_s": 168.6,
+ "psi_mem_us_per_s": 0.0,
+ "mem_avail_drop_mb": 62.2,
+ "latency_by_cmd_ms": {
+  "bash": {
+   "n": 716,
+   "p50": 1.39,
+   "p95": 1.53
+  },
+  "find": {
+   "n": 370,
+   "p50": 3.44,
+   "p95": 7.65
+  },
+  "rg": {
+   "n": 487,
+   "p50": 1.4,
+   "p95": 3.64
+  },
+  "python": {
+   "n": 379,
+   "p50": 15.84,
+   "p95": 31.99
+  },
+  "cat": {
+   "n": 375,
+   "p50": 3.48,
+   "p95": 3.67
+  },
+  "node": {
+   "n": 180,
+   "p50": 31.65,
+   "p95": 32.0
+  },
+  "git": {
+   "n": 553,
+   "p50": 3.54,
+   "p95": 3.81
+  }
+ }
+}
+{
+ "sessions": 10,
+ "wall_s": 20.08,
+ "cmds_per_session": 2306.0,
+ "fork_rate_per_s": 2389.0,
+ "ctxt_per_s": 51885.4,
+ "cpu_busy_pct": 98.9,
+ "psi_cpu_us_per_s": 10049.9,
+ "psi_io_us_per_s": 249.5,
+ "psi_mem_us_per_s": 0.0,
+ "mem_avail_drop_mb": -98.1,
+ "latency_by_cmd_ms": {
+  "rg": {
+   "n": 4054,
+   "p50": 3.57,
+   "p95": 3.75
+  },
+  "cat": {
+   "n": 2775,
+   "p50": 3.6,
+   "p95": 3.8
+  },
+  "git": {
+   "n": 4080,
+   "p50": 3.61,
+   "p95": 7.83
+  },
+  "bash": {
+   "n": 5268,
+   "p50": 1.48,
+   "p95": 3.66
+  },
+  "node": {
+   "n": 1368,
+   "p50": 31.96,
+   "p95": 32.16
+  },
+  "find": {
+   "n": 2750,
+   "p50": 7.7,
+   "p95": 7.9
+  },
+  "python": {
+   "n": 2765,
+   "p50": 31.89,
+   "p95": 32.1
+  }
+ }
+}
+{
+ "sessions": 50,
+ "wall_s": 20.28,
+ "cmds_per_session": 772.9,
+ "fork_rate_per_s": 3982.1,
+ "ctxt_per_s": 68870.3,
+ "cpu_busy_pct": 99.6,
+ "psi_cpu_us_per_s": 701566.8,
+ "psi_io_us_per_s": 143.6,
+ "psi_mem_us_per_s": 168.4,
+ "mem_avail_drop_mb": 278.9,
+ "latency_by_cmd_ms": {
+  "rg": {
+   "n": 6754,
+   "p50": 7.72,
+   "p95": 17.18
+  },
+  "python": {
+   "n": 4456,
+   "p50": 75.64,
+   "p95": 125.58
+  },
+  "git": {
+   "n": 6945,
+   "p50": 16.9,
+   "p95": 32.93
+  },
+  "bash": {
+   "n": 9051,
+   "p50": 4.75,
+   "p95": 11.11
+  },
+  "node": {
+   "n": 2325,
+   "p50": 77.72,
+   "p95": 124.98
+  },
+  "find": {
+   "n": 4486,
+   "p50": 18.87,
+   "p95": 36.95
+  },
+  "cat": {
+   "n": 4628,
+   "p50": 9.01,
+   "p95": 19.52
+  }
+ }
+}
+{
+ "sessions": 100,
+ "wall_s": 20.67,
+ "cmds_per_session": 345.5,
+ "fork_rate_per_s": 3477.0,
+ "ctxt_per_s": 61002.2,
+ "cpu_busy_pct": 99.9,
+ "psi_cpu_us_per_s": 898007.8,
+ "psi_io_us_per_s": 279.4,
+ "psi_mem_us_per_s": 11.7,
+ "mem_avail_drop_mb": 475.8,
+ "latency_by_cmd_ms": {
+  "rg": {
+   "n": 6143,
+   "p50": 14.57,
+   "p95": 38.43
+  },
+  "bash": {
+   "n": 8019,
+   "p50": 7.76,
+   "p95": 22.62
+  },
+  "find": {
+   "n": 3982,
+   "p50": 44.34,
+   "p95": 87.03
+  },
+  "python": {
+   "n": 4106,
+   "p50": 220.69,
+   "p95": 368.17
+  },
+  "git": {
+   "n": 6177,
+   "p50": 33.95,
+   "p95": 69.74
+  },
+  "cat": {
+   "n": 4098,
+   "p50": 18.19,
+   "p95": 42.42
+  },
+  "node": {
+   "n": 2025,
+   "p50": 219.49,
+   "p95": 323.46
+  }
+ }
+}
+saved: /home/krli/belllab/AThread/experiments/scripts/../results/exp1_scaling.json

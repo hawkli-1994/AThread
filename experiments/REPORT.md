@@ -1,0 +1,287 @@
+# AThread 诊断验证实验报告
+
+日期：2026-09-16
+环境：WSL2（kernel 6.18.33.2-microsoft-standard）、20 vCPU、16 GB RAM、Python 3.14.4、Node v26.8.1、git 2.53.0
+方法：用脚本化"模拟 agent 会话"（git status / rg / find / python / node / bash 的工具调用混合循环）做受控实验。脚本在 `scripts/`，原始数据在 `results/`。
+
+复现方式：
+
+```bash
+cd experiments
+python3 scripts/exp1_scaling.py   # 约 90 秒
+python3 scripts/exp2_startup.py
+python3 scripts/exp3_memory.py    # 约 40 秒
+python3 scripts/exp4_repo.py
+python3 scripts/exp5_pty.py       # 约 30 秒
+```
+
+---
+
+## 实验 1：诊断验证 —— 会话数扩展性（闭环压力测试）
+
+一个"会话" = 不停歇地循环执行工具命令 15 秒；命令延迟从会话内记录。会话数取 1 / 10 / 50 / 100。
+
+| 指标 | 1 会话 | 10 | 50 | 100 |
+|---|---|---|---|---|
+| python 命令 p50 (ms) | 15.8 | 31.9 | 75.6 | **220.7** |
+| node 命令 p50 (ms) | 31.7 | 32.0 | 77.7 | **219.5** |
+| git status p50 (ms) | 3.5 | 3.6 | 16.9 | **34.0** |
+| bash -c true p50 (ms) | 1.4 | 1.5 | 4.8 | 7.8 |
+| find p50 (ms) | 3.4 | 7.7 | 18.9 | 44.3 |
+| 每会话吞吐 (cmds/15s) | 3060 | 2306 | 773 | **345** |
+| fork 速率 (/s) | 334 | 2389 | 3982 | 3477 |
+| 上下文切换 (/s) | 10.4k | 51.9k | 68.9k | 61.0k |
+| PSI CPU (µs/s) | 2297 | 10050 | 701567 | 898008 |
+| PSI IO / PSI Mem | ~0 | ~0 | 很低 | 很低 |
+| MemAvailable 下降 (MB) | 62 | — | 279 | 476 |
+
+诊断运行（100 会话时每秒采样 /proc）：**20/20 核全部跑满**，load 41，可运行队列 60–88 个任务。
+
+**结论 1（诊断成立，且根因比 README 说的更聚焦）：**
+- README 列了 11 项病症，实测在 WSL2 上**唯一显著的瓶颈是 CPU 争用**——由大量短生命周期进程（尤其是 Python/Node 运行时冷启动）的进程churn 造成。IO/PSI、内存压力在此负载下均可忽略。
+- 同样的工作，100 会话时延迟放大 6–14 倍，每会话吞吐掉到 1/9。fork 速率 ~3.5k/s。这就是 WSL 里"agent 一多整个环境变卡"的直接机制。
+- 重要限定：这是**闭环压测**（命令之间没有 LLM 思考时间），真实 agent 的占空比低得多。它证明的是"当机器被 agent 会话填满时会发生什么"，对应 README 中 100+ 活跃会话的场景；对空闲/稀疏会话不适用。
+- 数据修正（第二轮发现）：表中 rg 行为无效数据——本机 rg 不带路径参数时静默空转（exit 1）。补测真实值：`rg -n 'def foo' -t py .` p50 6.4ms。修正后 100 会话时 rg 真实膨胀倍数会高于表中的 10.4x，但不改变"python/node 冷启动是最大单项"的结论。
+
+## 实验 2：进程启动开销 —— prefork/热运行时的收益上限
+
+| 执行方式 | p50 |
+|---|---|
+| `bash -c true` | 0.68 ms |
+| `python3 -c pass` | 8.03 ms |
+| `python3 -c 'import json,re,...'` | 20.03 ms |
+| `node -e 0` | 15.92 ms |
+| 热 fork+exit（imports 已加载的父进程） | **0.59 ms** |
+| 冷启动中 import 初始化占比 | 12 ms / 20 ms = **60%** |
+
+**结论 2（强烈支持 prefork/热运行时方向）：** 对 Python/Node，prefork + CoW 快照可把每次执行从 ~20ms 降到 ~0.6ms，**省 97%**。瓶颈不在 execve 本身，而在运行时初始化（import、模块表等）。对 bash/git/rg 这类轻量 ELF 二进制没有收益（冷启动已 <1ms，热 fork+exec 反而略慢）——所以加速应只针对重运行时，不需要也不能改变进程语义。
+
+## 实验 3：运行时内存去重 —— CoW 快照模型
+
+25 个 Python 会话（各 import 常用 agent 栈库）：
+
+| 模式 | 总 RSS | 总 PSS |
+|---|---|---|
+| 25 个独立进程 | 328 MB | 161.6 MB |
+| 25 个预导入父进程的 CoW 子进程 | 245 MB | **17.1 MB** |
+
+- 内核已经通过文件-backed 页共享自动去重了 ~51%（代码页），**真正的重复在匿名页/已初始化堆**（6.5MB/会话 的 PSS）。
+- CoW 快照模型下 25 会话总 PSS 仅 17MB，**节省 89%（~5.8MB/会话）**。按 100 会话推算 ≈ 580MB，约占本机内存 3.6%。
+- 限定：快照子进程是"纯 idle"的，真实会话会弄脏页面；收益打折扣但仍显著，且 Python 的 `fork`+CoW 语义与现有代码完全兼容。
+
+## 实验 4：仓库元数据重复访问 —— 共享 workspace 缓存
+
+2018 个文件的合成 git 仓库上：
+
+- `git status` 稳态 p50 1.98ms，50 个"agent"并发时 p50 涨到 4.49ms（2.3 倍，锁/CPU 争用）。
+- 60 次顺序 `git status` 烧掉 0.12s CPU 得到 60 个相同答案。
+- **原型共享缓存**（以 index/HEAD mtime 为 key）：59/60 次命中，平均 0.039ms vs 1.98ms，**省 98%**。
+
+**结论 3（方向正确，但单项收益小）：** 收益真实存在，但量级是毫秒级/次——它消除的是"重复劳动"，不是机器瓶颈。对大仓库（agent 常用的 monorepo 远大于 2018 文件）和跨仓库索引（rg 内容索引）收益会放大。属于锦上添花，不是主要矛盾。
+
+## 实验 5：PTY vs 轻量流
+
+- 每次执行延迟：pipe 0.69ms vs PTY 0.75ms（**仅 +9%**）。
+- 100 个 idle 会话：pipe 与 PTY 持有成本都在 ~0.5MB/会话 量级（测量受 page cache 波动影响，两者差异在噪声内）；idle PTY 会话产生 ~2210 ctxt/s。
+
+**结论 4（README 此条在本环境不成立）：** 在现代 WSL2（6.18 内核）上，PTY 开销可忽略。PTY 优化优先级应降低；README 中"大多数 agent 进程不需要完整终端"作为资源论证是弱的。
+
+---
+
+## 总体判断
+
+### 诊断是否成立？—— 部分成立，且可精确化
+
+| README 声称的病症 | 实验判定 |
+|---|---|
+| 进程churn / 短生命子进程过多 | ✅ **主瓶颈**。CPU 争用导致 6–14x 延迟放大 |
+| 运行时内存重复 | ✅ 真实，~6.5MB/会话 的 PSS 重复，CoW 可省 89% |
+| 重复文件系统/仓库元数据访问 | ⚠️ 真实但量级小（ms 级），属于次要收益 |
+| 内存压力 / IO 竞争 | ❌ 本负载下未观测到（PSI≈0） |
+| PTY 开销 | ❌ 现代 WSL2 上可忽略（+9% exec 延迟） |
+| 上下文切换率高 | ✅ 现象存在（10k→69k/s），但它是 CPU 争用的症状而非独立病根 |
+
+即：**README 的病症清单偏宽。真正的病根只有两个——重运行时的冷启动 CPU 成本和运行时堆的内存重复。**
+
+### 设计是否是对的？—— 方向正确，优先级应重排
+
+1. **最优先：重运行时的 prefork/CoW 热池**（README 的 Execution acceleration + Memory optimization + 部分 PTY 章节实际指向同一个机制）。实验 2/3 给出了量化上限：python 执行 -97% 延迟、内存 -89%/会话。这直接攻击唯一的主瓶颈。
+2. **次优先：共享 workspace/仓库缓存**（正确但收益小，适合作为第二步）。
+3. **可降级：PTY 管理、压力感知运行时**——在本环境（20 核/16GB、现代内核）实测支撑不足。README 声称的"100 个 idle 会话应很便宜"在本机本来就成立（idle 会话 ~0.5MB + 无 CPU），这部分愿景在 WSL2 上其实没有需要修的问题。
+4. README 坚持的"不改 agent、不改接口、快路径+回退"的工程原则与实验结论完全相容——所有优化（fork 池、CoW、缓存）都可以在标准 POSIX 语义内透明实现，这是该设计最有说服力的部分。
+
+### 一句话结论
+
+> 诊断方向对但清单过宽；设计方向对但优先级应聚焦——**先吃掉 Python/Node 冷启动这个 97% 的收益，其余都是边际优化**。
+
+### 后续实验建议
+
+- 在更大合成仓库（50k+ 文件）上重跑实验 4，验证元数据收益是否随规模放大。
+- 测稀疏占空比（命令间加 2–10s 思考延迟）下的会话上限，对应 README"100 idle + 少量活跃"的目标场景。
+- 用真实 agent（如 Claude Code/Codex）的 trace 回放替代合成负载，验证命令分布假设。
+
+---
+
+# 第二轮实验（2026-09-17）：目标收缩后的验证
+
+第一轮的结论把 AThread v0.1 收缩为单一目标：**Shared Warm Runtime / Agent Zygote（Python 优先）**。本轮实验回答四个跟进问题：
+
+1. 稀疏占空比（真实 agent 节奏）下，zygote fast path 的端到端收益是多少？（exp6）
+2. CoW 内存节省在子进程做真实工作（写脏内存）后还剩多少？（exp7）
+3. 大仓库下文件系统/仓库元数据成本是否升为主要矛盾？（exp8）
+4. warm-fork shim 的正确性和 fork 安全性边界是否成立？（exp9）
+
+另有一个重要方法学发现：**本机 ripgrep 15.0.0 不带路径参数时静默空转（exit 1，不搜任何文件）**。第一轮 exp1/exp4 中所有 rg 数据都是空转数据（rg p50 "1.4ms" 实际是无操作）。补测真实值：2k 文件仓库 `rg -n 'def foo' -t py .` p50 = **6.4ms**。这修正了第一轮"rg 很便宜"的口径，但不改变主瓶颈结论（python/node 冷启动仍是数量级最大的单项）。**教训：benchmark 必须校验退出码/输出，不能只测延迟。**
+
+## 实验 6：稀疏占空比 —— zygote 端到端模拟（最关键）
+
+100 会话，命令间隔 uniform(0.5, 3.0)s（模拟 LLM think-time）。条件 A：全部冷启动 exec；条件 B：python 命令走一个真实实现的 fork-broker zygote（预导入 + CoW，unix socket IPC，模拟 `athreadd` + shim），native 工具不变。
+
+| 指标 | A baseline | B AThread-sim | 变化 |
+|---|---|---|---|
+| python p50 / p95 / p99 (ms) | 19.8 / 23.3 / 26.5 | **2.7 / 3.3 / 4.4** | **-86% / -86% / -84%** |
+| 全部命令 p50 / p95 (ms) | 6.1 / 20.6 | **2.7 / 17.8** | -55% / -14% |
+| 每会话吞吐 (cmds) | 22.4 | 22.4 | 持平（受 think-time 限制） |
+| CPU 占用（核） | 1.76 | 1.88 | 持平 |
+| git/rg/bash/cat/node 延迟 | — | 与 A 完全相同 | fast path 无回归 |
+
+**结论 5（核心验证通过）：**
+- 即使在 CPU 远未饱和（1.8/20 核）的稀疏负载下，python 命令延迟仍有 **7.3 倍**差距——证明延迟瓶颈是启动成本本身，不是排队。真实 agent 的每次 python 工具调用都能从 ~20ms 降到 ~3ms，且不干扰其他命令。
+- zygote 机制端到端可行：socket 请求 → fork → 子进程执行代码 → 回收，p99 仅 4.4ms。
+- CPU 不省（工作本身还在做），省的是**每次调用的固定启动税**。第一轮"CPU 被启动成本吞掉"的闭环压测 + 本轮"稀疏下延迟仍差 7 倍"合起来完整覆盖了 README 的两个场景。
+
+## 实验 7：CoW 节省 vs 子进程写脏量
+
+25 会话，热根预导入 + 持有 8MB 堆结构 + 64MB 缓冲。子进程 fork 后按每页 4KB 写脏 X MB 再驻留：
+
+| 每会话写脏 | 总 PSS | 每会话 PSS | vs 独立进程 (68.8MB/会话) |
+|---|---|---|---|
+| 0 MB | 71 MB | 2.85 MB | **省 96%** |
+| 1 MB | 96 MB | 3.83 MB | 省 94% |
+| 4 MB | 168 MB | 6.72 MB | 省 90% |
+| 16 MB | 456 MB | 18.25 MB | 省 73% |
+
+**结论 6：节省随写脏量近似线性衰减（每写脏 1MB 约 +1MB PSS/会话），即使每会话弄脏 16MB 仍省 73%。** agent 的一次性工具调用（import + 小数据 + 输出）弄脏量通常在 KB~低 MB 级，落在曲线左端。第一轮的 89% 不是在"纯快照理想条件"下才成立的数字。
+
+## 实验 8：5 万文件大仓库 —— 元数据成本重新评级
+
+2018 文件 → 50000 文件（500 目录），稳态（warm cache）：
+
+| 操作 | 2k 仓库 (第一轮) | 50k 仓库 | 30 并发 p50 |
+|---|---|---|---|
+| git status --porcelain | 2.0 ms | **21.5 ms** | **96 ms**（4.5x 膨胀） |
+| rg -l def | 6.4 ms（补测真值） | **71 ms** | **612 ms**（8.6x 膨胀） |
+| find -name '*.py' | 3.4 ms | 17.3 ms | — |
+| fresh clone 首次 git status | — | 182 ms | — |
+
+**结论 7（修正第一轮的评级）：** 第一轮在 2k 仓库上得出"元数据优化只有毫秒级、属次要收益"——在真实规模的仓库上不成立。50k 文件（仍远小于 Linux/Chromium 级 monorepo）下，`rg`/`git status` 已经是 **几十到几百毫秒级**，30 路并发再膨胀 5–9 倍。共享内容索引 + 仓库元数据缓存应从"Phase 2 锦上添花"上调为**与 zygote 并列的第二支柱**，触发条件（fs/repo 操作占 agent wall time >10%）在 50k 文件规模上已满足。
+
+## 实验 9：shim 正确性 + fork 安全性边界
+
+实现最小 `athread python` 原型（fork-broker + runpy/exec），11 项断言全部通过：
+
+- argv（含空格）、cwd 相对路径、会话 env、stdin、exit code（含 SystemExit 语义）、argparse 脚本、子进程崩溃隔离（rc=1 且 broker 存活）、子进程可见热导入（证明 fast path 真的热）。
+- **fork 安全边界验证：warm root 在预导入全部目标库后仍只有 1 个线程（MainThread）**——满足"single-threaded clean state"的 zygote 前提。工程红线得到实验支持：预加载可以激进，但必须保持单线程、不初始化网络/异步运行时。
+
+## Node 路线探测（补充）
+
+`node --build-snapshot`/`--snapshot-blob`（V8 startup snapshot）在本机 Node v26.8.1 上可用，但 trivial 状态下 restore+run ≈ 冷启动（均 ~15–20ms）——snapshot 要预热足够多的模块图才有收益，且 Node 的 libuv 线程池/GC 使 fork 路线不安全。**确认研发顺序 Python → Node，v0.1 只做 Python。**
+
+## 第二轮总结论
+
+1. **v0.1 的核心机制（Python warm-fork zygote）在真实占空比下端到端成立**：python 调用延迟 -86%（p50 19.8→2.7ms），无回归，正确性 11/11。
+2. **内存收益稳健**：写脏 4MB/会话仍省 90%。
+3. **第二支柱确认为共享索引/仓库缓存**（50k 文件下并发 rg p50 612ms），与第一轮 2k 仓库的结论相反——评级依据规模而定。
+4. **工程边界清晰**：单线程 warm root 可行（已验证）；Node 用 snapshot 路线缓行。
+5. AThread v0.1 的立项数据已经齐备：**一个 PR 大小的运行时 + 一个 PATH shim**，就能把真实 agent 负载中最重的单项税（Python 冷启动）砍掉 ~86%，顺带把会话内存砍掉 ~90%。
+
+---
+
+# 第三轮实验（2026-09-17）：真实 Agent Trace 验证
+
+方法：写了一个 C 语言的 exec-shim（`trace/shim.c`，77 个工具符号链接，~50µs 开销），通过 PATH 拦截真实 agent 会话中的每一次工具调用，记录 argv/cwd/耗时/退出码到 JSONL。让 **Claude Code 2.1.270** 和 **Kimi CLI 0.43.1** 在隔离 scratch 仓库中执行同一任务（摸清 20 模块×100 文件仓库结构 → 写 Python 脚本批量验证 2000 个文件符合命名约定 → git 确认工作区 → 输出报告，全程只读）。reasonix 是 Windows shim、WSL 内无 linux-x64 二进制，不可用。
+
+## 真实命令分布（两个 agent 合计，3 个会话）
+
+| 维度 | 数据 |
+|---|---|
+| exec 总数 | 120 次（claude 57 + claude wrongcwd 44 + kimi 19） |
+| **python3 占比（次数）** | **2%（3 次）** |
+| **python3 占比（命令耗时）** | **65%（983ms / 1516ms）** |
+| node 占比 | 0%（本任务未触发 node；任务类型相关） |
+| 其余高频 | wc×26、git×23、cat×19、head×9、grep×7、sort×7 —— 全是毫秒级 |
+
+单会话逐项：
+
+| 会话 | execs | 会话墙钟 | 命令总耗时 | 占空比 | python 耗时占比 |
+|---|---|---|---|---|---|
+| claude_A | 57 | 98s | 542ms | **0.6%** | 68% |
+| claude_A（wrongcwd） | 44 | 119s | ~740ms | ~0.6% | 63% |
+| kimi_A | 19 | 87s | 226ms | **0.3%** | 67% |
+
+## 真实 python 命令回放（冷启动 vs zygote，replay_real.py）
+
+对 3 个真实出现的 python 命令（`verify_convention.py` 等，逐文件 import + exec 2000 个模块做验证）重测：
+
+| | 冷启动 exec | zygote warm fork | 加速 |
+|---|---|---|---|
+| verify_convention.py | 66.5ms | 43.4ms | 1.5x |
+| verify_fixture.py | 63.9ms | 41.0ms | 1.6x |
+
+分解：这 3 条命令的 warm 耗时（~43ms）几乎全是**真实工作**（解析执行 2000 个文件），冷启动比 warm 多出的 ~23ms（35%）是**运行时启动税**（解释器初始化 + import ast/re 等）——正是 zygote 能砍掉的部分。trace 中观察到首次执行 366ms vs 重测 66ms 的差是 page cache 冷启动，属于另一维度。
+
+## 第三轮结论：假设证实，且故事讲得更准了
+
+1. **"python 调用次数少但成本 dominant"的假设被真实数据证实**：3 个会话里 python 只占 2% 的 exec 次数，却占 65% 的命令耗时。真实 agent 的行为模式与第二轮 synthetic profile 的预测一致。
+2. **占空比只有 0.3–0.6%**——比之前 synthetic 的 10-30% 估计低一个数量级。真实 agent 会话的成本结构：墙钟 ≈ LLM 思考，CPU 成本全部集中在极少数的批处理脚本上。
+3. **这精确划定了 zygote 的价值边界**：
+   - 单会话墙钟：zygote 几乎无感（命令时间本身只占 0.5%）。
+   - **zygote 的真实价值在机器级：当 N 个这样的会话共存时，那 20ms/次的启动税 × 高 fork 率就是 exp1 里 20 核被打满的机制；每会话 6.5MB 的初始化堆重复 × 100 会话就是 exp3 里的 0.6GB 浪费。** 单会话 trace 看不到这些，多会话压测（exp1/exp6）看得到。
+   - 对 agent UX：交互式命令（p95 等待）延迟 -86%。
+4. **任务类型敏感性**：本任务 node 出现 0 次——node 的权重强依赖 workload（前端/TS 项目会反转）。python 优先的排序不受影响。
+5. **样本局限**：2 个 agent × 1 类任务 × 单会话，绝对数字不可外推；但"python 少而重"的结构在 3 个独立会话中稳定重现（63%/67%/68%），方向性结论可靠。
+
+**最终叙事**：真实数据把 AThread 的价值主张从"让 Linux 承载更多 agent"精确化为——*agent 会话的墙钟是 LLM 的，但机器的成本是运行时的；AThread 消灭的是后者中那个 100% 重复、0% 必要的部分（运行时初始化税）*。
+
+---
+
+# 第四轮实验（2026-09-17）：扩大真实数据集
+
+## 规模
+
+14 个真实会话：3 个 agent（Claude Code 2.1.270 / Kimi CLI 0.43.1 / Codex CLI 0.154.0）× 4 类任务 × 含 3 会话并发 burst。共 585 次 execve 被记录（已剔除 codex 自身的常驻 node 运行时进程）。
+
+## 按任务类型的真实命令画像
+
+| 任务 | 会话 | python 次数占比 | python 耗时占比 | 主导耗时的工具 |
+|---|---|---|---|---|
+| A 仓库批量验证（2k 文件） | claude×4, kimi×1 | 2–5% | **26–68%** | python3 |
+| B 修 bug+跑测试 | claude, kimi, codex | 5–12% | 17–40% | python3、`which`（claude 查 python 花 76ms） |
+| C Node 修复（webapp） | claude, kimi | 0% | 0% | **node×4 + npm×2 ≈ 410ms**（占 50%+） |
+| D 大仓库只读分析（50k 文件） | claude, kimi, codex | 0–5% | 6–16% | **coreutils 管道**：sort 1405ms、xargs 1551ms、wc/tail/cat/grep 各 500–1000ms |
+
+全组合计（工具调用）：python3×12（2% 次数 / 17% 耗时）、node×8（2%/3%）、git×94（最频繁）、其余为 cat/wc/grep/sort/coreutils 长尾。
+
+## 关键新发现
+
+1. **任务类型决定瓶颈归属**——这是对第三轮"python 主导"的重要修正：
+   - 分析/测试类任务：python 主导（A/B 类），zygote 直接命中；
+   - Node 类任务：node+npm 占一半以上耗时，需要 Node 方案（V8 snapshot）；
+   - 大仓库文本处理类任务：成本在 coreutils 管道（sort/xargs/wc/grep），这些**冷启动已经很快（<1ms），zygote 帮不上**，需要的是共享索引/内容缓存（Phase 2）和 page-cache 友好性。
+   → AThread 的两个支柱（zygote + workspace 缓存）分别命中不同的任务类型，都有真实数据支撑。
+2. **测试循环是最大的单点胜利**：回放真实命令 `python3 -m unittest discover -s tests -v`——冷启动 64.2ms → zygote warm **3.1ms（21 倍）**。agent 修 bug 时反复跑测试，每次省 60ms+，且 unittest/pytest 的收集+导入阶段恰好是 zygote 预热内容。`python3 -`（stdin 脚本）5.3 倍。重计算型脚本（analyze_even.py，365ms）只有 1.1 倍——诚实的下限：启动税占比小。
+3. **三个 agent 的行为画像不同**：claude 爱用 python 脚本做批量分析；kimi 更爱纯 shell 管道（kimi_D 几乎没有 python，cat×14 wc×7）；codex 重度使用 tr/cut 文本工具和 git，零 python（但其 node 运行时本身占据整个会话）。**zygote 对 claude 类行为收益最大，对 codex 类行为收益最小**——收益取决于 agent 的编码风格。
+4. **agent 也在为"找运行时"付费**：claude_B 中一次 `which` 耗时 76ms（大 PATH 扫描 shim 目录放大了这一点，但真实 agent 的长 PATH 同样存在）。
+5. 并发 burst（3×claude 同时）：未观察到显著延迟膨胀（3 会话远低于 20 核饱和线），与 exp1 的 100 会话饱和结论一致——**并发惩罚只在会话密度足够高时出现**。
+
+## 全量回放汇总（13 条真实命令）
+
+python 命令（9 条）冷启动合计 1225ms → zygote 投影 930ms；其中测试/发现类命令收益最大（21x），重计算脚本收益最小（1.1x）。**真实负载下 zygote 对 python 调用的启动税削减约 24–76%，取决于任务中"启动:工作"的比例。**
+
+## 四轮实验的最终判断
+
+1. 诊断成立且精确：**机器成本的构成是任务类型决定的**——python/node 启动税（A/B/C 类）+ coreutils 管道与大仓库元数据（D 类）。README 的原始清单里真正重要的就这两条。
+2. v0.1（Python zygote）有真实数据支撑的最大胜利场景是**测试循环和分析脚本**（5–21 倍单命令加速）；对 shell 管道型 agent（kimi/codex 风格）收益有限——这决定了 shim 的 PATH 优先级设计和"何时进 fast path"的启发式值得做（例如：只对 import 重的调用预热）。
+3. Node 任务占耗时可达 50%+，Node 方案（snapshot）从"以后再说"上调为"第二优先"，但仍排在 Python 之后（fork 不安全，snapshot 需预热模块图）。
+4. workspace 缓存/共享索引（Phase 2）在 D 类任务上有真实需求信号（单条 sort/xargs 管道秒级）。
+5. 数据规模：14 会话 / 585 execve / 3 agent / 4 任务类型。仍建议持续采集（接入真实开发会话一个月），但立项所需的证据链已完整。

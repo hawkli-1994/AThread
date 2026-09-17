@@ -1,0 +1,82 @@
+===== exp6 =====
+{
+ "condition": "A_baseline",
+ "sessions": 100,
+ "wall_s": 41.2,
+ "total_cmds": 19,
+ "cmds_per_session": 0.2,
+ "python_cmds": 0,
+ "fork_rate_per_s": 194.1,
+ "ctxt_per_s": 16901.1,
+ "cpu_busy_cores_avg": 2.95,
+ "p50_all": 4.84,
+ "p95_all": 20.92,
+ "p99_all": 20.92,
+ "python_p50": 0.0,
+ "python_p95": 0.0,
+ "python_p99": 0.0,
+ "latency_by_cmd_p50": {
+  "bash": 1.17,
+  "cat": 2.12,
+  "git": 2.84,
+  "node": 17.89,
+  "rg": 6.87
+ }
+}
+{
+ "condition": "B_athread_sim",
+ "sessions": 100,
+ "wall_s": 43.3,
+ "total_cmds": 2243,
+ "cmds_per_session": 22.4,
+ "python_cmds": 377,
+ "fork_rate_per_s": 321.6,
+ "ctxt_per_s": 16553.6,
+ "cpu_busy_cores_avg": 1.37,
+ "p50_all": 3.17,
+ "p95_all": 18.83,
+ "p99_all": 23.68,
+ "python_p50": 3.13,
+ "python_p95": 4.9,
+ "python_p99": 6.61,
+ "latency_by_cmd_p50": {
+  "bash": 1.16,
+  "cat": 2.14,
+  "git": 2.87,
+  "node": 18.52,
+  "python": 3.13,
+  "rg": 7.3
+ }
+}
+saved: /home/krli/belllab/AThread/experiments/results/exp6_sparse_duty.json
+
+===== exp7 =====
+n=25 sessions, warm root pre-imported (json,re) + 8MB heap-ish structure
+independent processes total PSS: 1720.8 MB  (68.83 MB/session)
+CoW children, dirty  0 MB/session: total PSS    0.0 MB  (0.00 MB/session)  saving vs independent: 0%
+CoW children, dirty  1 MB/session: total PSS    0.0 MB  (0.00 MB/session)  saving vs independent: 0%
+CoW children, dirty  4 MB/session: total PSS    0.0 MB  (0.00 MB/session)  saving vs independent: 0%
+CoW children, dirty 16 MB/session: total PSS    0.0 MB  (0.00 MB/session)  saving vs independent: 0%
+
+===== exp8 =====
+built 50000 files
+== steady state (after warm-up) ==
+  git status --porcelain     p50    21.07ms  p95    26.99ms
+  git status                 p50    22.57ms  p95    24.86ms
+  git diff --stat            p50     9.32ms  p95    11.31ms
+Traceback (most recent call last):
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 62, in <module>
+    fn(); fn()
+    ~~^^
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 59, in <lambda>
+    ("rg -l def --type py",    lambda: t_sh(["rg", "-l", "def", "--type", "py"])),
+                                       ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/krli/belllab/AThread/experiments/scripts/exp8_big_repo.py", line 43, in t_sh
+    subprocess.run(argv, cwd=BIG, stdout=subprocess.DEVNULL,
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   stderr=subprocess.DEVNULL, check=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['rg', '-l', 'def', '--type', 'py']' returned non-zero exit status 1.

@@ -1,0 +1,8 @@
+== A) per-exec latency, pipe vs PTY (n=100) ==
+  pipe p50   0.69ms p95   0.78ms
+  pty  p50   0.75ms p95   0.82ms (+0.06ms, 9% slower)
+
+== B) idle-session cost: 100 held-open sessions, pipe vs PTY ==
+  100 pipe-held bash sessions: MemAvailable drop 56.0 MB (baseline measured first)
+  100 pty-held bash sessions:  MemAvailable drop -56.0 MB vs baseline
+  context switches while 100 pty sessions idle: 2210/s

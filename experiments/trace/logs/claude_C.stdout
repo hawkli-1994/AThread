@@ -1,0 +1,5 @@
+**总结**
+
+- **失败原因**：`src/utils.js` 的 `mean()` 用了 `Math.floor(sum(list) / list.length)`，把平均值截断为整数，导致 `mean([1, 2, 4])` 返回 `2` 而非 `2.333...`，断言失败。
+- **修复**：去掉 `Math.floor`，直接返回 `sum(list) / list.length`（仅改动 `src/utils.js`，`test.js` 未动，未安装任何新依赖）。
+- **结果**：`npm test` 全部通过，输出 `ALL TESTS PASSED`。

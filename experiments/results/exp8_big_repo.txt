@@ -1,0 +1,16 @@
+bigrepo exists, reusing
+== steady state (after warm-up) ==
+  git status --porcelain     p50    22.75ms  p95    24.97ms
+  git status                 p50    21.36ms  p95    22.53ms
+  git diff --stat            p50     8.37ms  p95     9.66ms
+  rg -l def .                p50    71.36ms  p95    78.40ms
+  rg -l def -t py .          p50    73.86ms  p95    77.70ms
+  find . -name '*.py'        p50    17.29ms  p95    24.57ms
+
+== concurrent from 30 'agents' ==
+  30x concurrent git status --porcelain: wall 173ms, per-call p50 96.23ms
+  30x concurrent rg -l def:              wall 706ms, per-call p50 611.98ms
+
+== first-touch cost (drop caches is unavailable; approximate with fresh clone) ==
+  first git status on fresh clone: 182ms
+  first rg on fresh clone:         42ms

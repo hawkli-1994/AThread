@@ -1,0 +1,12 @@
+# generated fixtures (regenerate: python3 scripts/gen_fixtures.py all)
+fixture/
+__pycache__/
+*.pyc
+
+# trace harness runtime artifacts
+trace/shim
+trace/shim_bin/
+trace/workspaces/
+
+# editor/OS noise
+.DS_Store

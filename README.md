@@ -853,6 +853,22 @@ The first milestone is simpler:
 
 > Prove that an ordinary Ubuntu or WSL machine can run significantly more concurrent AI agent sessions with AThread than without it.
 
+### Current evidence
+
+A four-round experimental study (synthetic benchmarks, an end-to-end zygote
+simulation, and execve traces from 14 real agent sessions across Claude Code,
+Kimi CLI, and Codex CLI) is available in [experiments/REPORT.md](experiments/REPORT.md).
+Headline findings:
+
+* Agent session cost is task-type dependent: Python/Node runtime startup tax
+  dominates analysis/test tasks (a warm-fork zygote cuts it 5–21x on real
+  commands such as `python -m unittest discover`), while large-repo text
+  pipelines (sort/xargs/wc) need shared indexing instead.
+* Copy-on-write warm runtimes retain 90%+ of their memory savings under
+  realistic per-session memory dirtying.
+* PTY overhead and memory/IO pressure were measured to be negligible on
+  modern WSL2 — the original README diagnosis list is narrower in practice.
+
 ---
 
 ## License

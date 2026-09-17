@@ -1,0 +1,139 @@
+[
+ {
+  "label": "burst1",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/verify_burst1.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst1",
+  "observed_ms": 100.893
+ },
+ {
+  "label": "burst2",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/loc_stats.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst2",
+  "observed_ms": 43.724
+ },
+ {
+  "label": "burst3",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/check_modules.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/burst3",
+  "observed_ms": 64.729
+ },
+ {
+  "label": "claude_A",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/verify_convention.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_A",
+  "observed_ms": 365.87
+ },
+ {
+  "label": "claude_A_wrongcwd",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/verify_fixture.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace",
+  "observed_ms": 464.796
+ },
+ {
+  "label": "claude_B",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "-m",
+   "unittest",
+   "discover",
+   "-s",
+   "tests",
+   "-v"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_B",
+  "observed_ms": 45.213
+ },
+ {
+  "label": "claude_C",
+  "bin": "node",
+  "argv": [
+   "node",
+   "/home/krli/.nvm/versions/node/v26.8.1/bin/npm",
+   "test"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C",
+  "observed_ms": 92.601
+ },
+ {
+  "label": "claude_C",
+  "bin": "node",
+  "argv": [
+   "node",
+   "test.js"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_C",
+  "observed_ms": 22.711
+ },
+ {
+  "label": "claude_D",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/analyze_even.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/claude_D",
+  "observed_ms": 337.396
+ },
+ {
+  "label": "kimi_A",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "/tmp/verify_convention.py"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_A",
+  "observed_ms": 152.264
+ },
+ {
+  "label": "kimi_C",
+  "bin": "node",
+  "argv": [
+   "node",
+   "/home/krli/.nvm/versions/node/v26.8.1/bin/npm",
+   "test"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C",
+  "observed_ms": 89.401
+ },
+ {
+  "label": "kimi_C",
+  "bin": "node",
+  "argv": [
+   "node",
+   "test.js"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_C",
+  "observed_ms": 19.367
+ },
+ {
+  "label": "kimi_D",
+  "bin": "python3",
+  "argv": [
+   "python3",
+   "-"
+  ],
+  "cwd": "/home/krli/belllab/AThread/experiments/trace/workspaces/kimi_D",
+  "observed_ms": 297.804
+ }
+]

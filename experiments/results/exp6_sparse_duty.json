@@ -1,0 +1,52 @@
+[
+ {
+  "condition": "A_baseline",
+  "sessions": 100,
+  "wall_s": 43.2,
+  "total_cmds": 2239,
+  "cmds_per_session": 22.4,
+  "python_cmds": 376,
+  "fork_rate_per_s": 315.3,
+  "ctxt_per_s": 79681.6,
+  "cpu_busy_cores_avg": 1.76,
+  "p50_all": 6.06,
+  "p95_all": 20.59,
+  "p99_all": 23.35,
+  "python_p50": 19.79,
+  "python_p95": 23.25,
+  "python_p99": 26.52,
+  "latency_by_cmd_p50": {
+   "bash": 1.02,
+   "cat": 1.91,
+   "git": 2.61,
+   "node": 17.2,
+   "python": 19.79,
+   "rg": 6.8
+  }
+ },
+ {
+  "condition": "B_athread_sim",
+  "sessions": 100,
+  "wall_s": 43.3,
+  "total_cmds": 2244,
+  "cmds_per_session": 22.4,
+  "python_cmds": 377,
+  "fork_rate_per_s": 310.2,
+  "ctxt_per_s": 106150.4,
+  "cpu_busy_cores_avg": 1.88,
+  "p50_all": 2.72,
+  "p95_all": 17.8,
+  "p99_all": 20.48,
+  "python_p50": 2.7,
+  "python_p95": 3.25,
+  "python_p99": 4.37,
+  "latency_by_cmd_p50": {
+   "bash": 1.05,
+   "cat": 1.91,
+   "git": 2.6,
+   "node": 17.49,
+   "python": 2.7,
+   "rg": 6.75
+  }
+ }
+]

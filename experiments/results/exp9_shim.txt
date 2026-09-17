@@ -1,0 +1,15 @@
+warm root state after imports: {"threads_after_imports": 1, "thread_names": ["MainThread"]}
+  -> single-threaded root: True (threads: ['MainThread'])
+  [PASS] argv preserved (incl. spaces)
+  [PASS] exit code 42 propagates
+  [PASS] SystemExit('msg') -> rc=1
+  [PASS] cwd-relative file read
+  [PASS] session env injected
+  [PASS] stdin delivered (child read: 'line1\nline2\n')
+  [PASS] runpy script + argparse exit 0
+  [PASS] child exception isolated (rc=1, broker alive)
+  [PASS] broker still serving after child crash
+  [PASS] child sees warm imports (fast path actually warm)
+  [PASS] runpy registers __main__ per child
+
+11 passed, 0 failed
