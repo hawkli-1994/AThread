@@ -1,0 +1,8 @@
+  blocked by venv:              0
+  forms: {'script': 8, '-m': 4, 'flag -': 1, 'flag --version': 1}
+  observed wall: eligible 2059ms | ineligible 298ms
+  node* execs (v0.1 does NOT accelerate): 8
+
+all bins: [('git', 112), ('tr', 105), ('cut', 69), ('cat', 67), ('wc', 49), ('grep', 47), ('head', 37), ('date', 32), ('ls', 20), ('sed', 18)]
+
+HIT RATE for v0.1 (python-only scope): 12/14 python calls = 86% of python calls, but python is only 2% of all calls

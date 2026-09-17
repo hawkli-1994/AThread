@@ -1,0 +1,4 @@
+• The bug is clear: `div` uses integer division (`//`), breaking `test_div` and `test_avg`. Fixing:
+
+• Fixed. The bug was in `calc/ops.py:12` — `div` used integer division (`a // b`), which truncated `div(7, 2)` to `3` instead of `3.5`, and also skewed `avg`. Changed it to true division (`a / b`). All 5 tests now pass with `OK`.
+

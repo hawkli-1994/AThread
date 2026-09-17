@@ -1,0 +1,52 @@
+{"ev":"start","ts":1789656942747776475,"pid":2009033,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009033,"ts":1789656942750243621,"dur_ms":2.461,"rc":0}
+{"ev":"start","ts":1789656942950684372,"pid":2009056,"bin":"git","argv":["git","-c","core.hooksPath=/dev/null","-c","core.fsmonitor=","-C","/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","ls-files","--error-unmatch","--",":(icase).claude/settings.local.json"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009056,"ts":1789656942951627068,"dur_ms":0.939,"rc":1}
+{"ev":"start","ts":1789656942956025248,"pid":2009058,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","-c","core.hooksPath=/dev/null","-c","core.fsmonitor=","remote","get-url","origin"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009058,"ts":1789656942957286624,"dur_ms":1.257,"rc":2}
+{"ev":"start","ts":1789656942962666179,"pid":2009061,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","-c","core.hooksPath=/dev/null","-c","core.fsmonitor=","remote"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009061,"ts":1789656942963628510,"dur_ms":0.958,"rc":0}
+{"ev":"start","ts":1789656942979287569,"pid":2009066,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.fsmonitor=","-c","core.hooksPath=/dev/null","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","--no-optional-locks","status","--short","--ignore-submodules=dirty"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656942979700461,"pid":2009067,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.fsmonitor=","-c","core.hooksPath=/dev/null","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","--no-optional-locks","log","--oneline","-n","5"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656942980066792,"pid":2009069,"bin":"git","argv":["/home/krli/belllab/AThread/experiments/trace/shim_bin/git","-c","core.fsmonitor=","-c","core.hooksPath=/dev/null","-c","core.askPass=","-c","protocol.ext.allow=never","-c","submodule.recurse=false","-c","log.showSignature=false","-c","gc.auto=0","-c","maintenance.auto=false","config","user.name"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009067,"ts":1789656942980785925,"dur_ms":1.082,"rc":0}
+{"ev":"end","pid":2009066,"ts":1789656942980811867,"dur_ms":1.520,"rc":0}
+{"ev":"end","pid":2009069,"ts":1789656942980835946,"dur_ms":0.765,"rc":0}
+{"ev":"start","ts":1789656944879373803,"pid":2009124,"bin":"env","argv":["env"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009124,"ts":1789656944881435992,"dur_ms":2.058,"rc":0}
+{"ev":"start","ts":1789656944891575207,"pid":2009132,"bin":"grep","argv":["grep","-qs","i"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009132,"ts":1789656944892465421,"dur_ms":0.886,"rc":1}
+{"ev":"start","ts":1789656944894655810,"pid":2009135,"bin":"head","argv":["head","-n","1000"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009135,"ts":1789656944896428495,"dur_ms":1.768,"rc":0}
+{"ev":"start","ts":1789656944897179976,"pid":2009138,"bin":"cut","argv":["cut","-d ","-f3"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656944897275822,"pid":2009139,"bin":"grep","argv":["grep","-vE","^_[^_]"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009138,"ts":1789656944898735441,"dur_ms":1.552,"rc":0}
+{"ev":"end","pid":2009139,"ts":1789656944898881763,"dur_ms":1.602,"rc":0}
+{"ev":"start","ts":1789656944901358875,"pid":2009150,"bin":"grep","argv":["grep","on"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656944901471595,"pid":2009151,"bin":"awk","argv":["awk","{print \"set -o \" $1}"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656944901602060,"pid":2009152,"bin":"head","argv":["head","-n","1000"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009150,"ts":1789656944901973265,"dur_ms":0.611,"rc":0}
+{"ev":"end","pid":2009151,"ts":1789656944913227322,"dur_ms":11.751,"rc":0}
+{"ev":"end","pid":2009152,"ts":1789656944913526623,"dur_ms":11.920,"rc":0}
+{"ev":"start","ts":1789656944914303583,"pid":2009157,"bin":"sed","argv":["sed","s/^alias //g"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656944914306854,"pid":2009158,"bin":"sed","argv":["sed","s/^/alias -- /"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"start","ts":1789656944914471359,"pid":2009159,"bin":"head","argv":["head","-n","1000"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009157,"ts":1789656944915056768,"dur_ms":0.749,"rc":0}
+{"ev":"end","pid":2009158,"ts":1789656944915213084,"dur_ms":0.902,"rc":0}
+{"ev":"end","pid":2009159,"ts":1789656944915999700,"dur_ms":1.525,"rc":0}
+{"ev":"start","ts":1789656944916639639,"pid":2009163,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009163,"ts":1789656944918051468,"dur_ms":1.409,"rc":0}
+{"ev":"start","ts":1789656944918641664,"pid":2009165,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009165,"ts":1789656944920078118,"dur_ms":1.433,"rc":0}
+{"ev":"start","ts":1789656944920679769,"pid":2009167,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009167,"ts":1789656944921991294,"dur_ms":1.308,"rc":0}
+{"ev":"start","ts":1789656944922511496,"pid":2009169,"bin":"cat","argv":["cat"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009169,"ts":1789656944923878232,"dur_ms":1.364,"rc":0}
+{"ev":"start","ts":1789656944930890050,"pid":2009174,"bin":"head","argv":["head","-50"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2009174,"ts":1789656944935143554,"dur_ms":4.250,"rc":0}
+{"ev":"start","ts":1789657016705067648,"pid":2010338,"bin":"python3","argv":["python3","--version"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2010338,"ts":1789657016708733920,"dur_ms":3.662,"rc":0}
+{"ev":"start","ts":1789657056031436629,"pid":2010969,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2010969,"ts":1789657056045386283,"dur_ms":13.945,"rc":0}
+{"ev":"start","ts":1789657056046578983,"pid":2010972,"bin":"grep","argv":["grep","-c","\"ev\":\"start\"","/home/krli/belllab/AThread/experiments/trace/logs/pyfeat_claude.jsonl"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_claude","venv":0}
+{"ev":"end","pid":2010972,"ts":1789657056048338797,"dur_ms":1.756,"rc":0}

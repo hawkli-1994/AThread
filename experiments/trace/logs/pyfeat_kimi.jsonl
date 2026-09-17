@@ -1,0 +1,10 @@
+{"ev":"start","ts":1789657056075536550,"pid":2010987,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_kimi","venv":0}
+{"ev":"end","pid":2010987,"ts":1789657056077648665,"dur_ms":2.108,"rc":0}
+{"ev":"start","ts":1789657056706570699,"pid":2011047,"bin":"grep","argv":["grep","-qs","i"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_kimi","venv":0}
+{"ev":"end","pid":2011047,"ts":1789657056707233501,"dur_ms":0.658,"rc":1}
+{"ev":"start","ts":1789657090198756443,"pid":2011581,"bin":"python3","argv":["python3","-m","unittest","discover","-s","tests","-v"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_kimi","venv":0}
+{"ev":"end","pid":2011581,"ts":1789657090257502492,"dur_ms":58.740,"rc":0}
+{"ev":"start","ts":1789657096256215724,"pid":2011677,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_kimi","venv":0}
+{"ev":"end","pid":2011677,"ts":1789657096258745698,"dur_ms":2.525,"rc":0}
+{"ev":"start","ts":1789657096259622419,"pid":2011680,"bin":"grep","argv":["grep","-c","\"ev\":\"start\"","/home/krli/belllab/AThread/experiments/trace/logs/pyfeat_kimi.jsonl"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfeat_kimi","venv":0}
+{"ev":"end","pid":2011680,"ts":1789657096260332162,"dur_ms":0.706,"rc":0}

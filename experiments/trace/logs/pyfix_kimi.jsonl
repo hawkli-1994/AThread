@@ -1,0 +1,10 @@
+{"ev":"start","ts":1789656464595876970,"pid":2000863,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_kimi","venv":0}
+{"ev":"end","pid":2000863,"ts":1789656464598154571,"dur_ms":2.274,"rc":0}
+{"ev":"start","ts":1789656465227976437,"pid":2000904,"bin":"grep","argv":["grep","-qs","i"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_kimi","venv":0}
+{"ev":"end","pid":2000904,"ts":1789656465228725747,"dur_ms":0.745,"rc":1}
+{"ev":"start","ts":1789656475790078459,"pid":2001106,"bin":"python3","argv":["python3","-m","unittest","discover","-s","tests","-v"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_kimi","venv":0}
+{"ev":"end","pid":2001106,"ts":1789656475828742333,"dur_ms":38.658,"rc":0}
+{"ev":"start","ts":1789656479329871621,"pid":2001137,"bin":"date","argv":["date","+%s"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_kimi","venv":0}
+{"ev":"end","pid":2001137,"ts":1789656479332337311,"dur_ms":2.462,"rc":0}
+{"ev":"start","ts":1789656479333119556,"pid":2001140,"bin":"grep","argv":["grep","-c","\"ev\":\"start\"","/home/krli/belllab/AThread/experiments/trace/logs/pyfix_kimi.jsonl"],"cwd":"/home/krli/belllab/AThread/experiments/trace/workspaces/pyfix_kimi","venv":0}
+{"ev":"end","pid":2001140,"ts":1789656479333783015,"dur_ms":0.660,"rc":0}

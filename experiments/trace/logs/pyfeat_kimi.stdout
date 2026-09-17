@@ -1,0 +1,11 @@
+• The existing `div` uses integer division, which breaks `test_div` and `test_avg`. I'll write the new module and tests, fix that bug so the full suite passes, then run the tests.
+
+• Now fix the integer-division bug in `calc/ops.py:11-12` so the existing tests can pass:
+
+• All 9 tests pass on the first run.
+
+  What I did:
+  - **`calc/stats.py`** — new module with `mean(data)` (sum divided by count) and `median(data)` (sorted middle element for odd lengths, average of the two middles for even), written in the same plain style as `calc/ops.py`.
+  - **`tests/test_stats.py`** — tests for mean, odd/even median, and single-element median, matching the existing one-line test style in `tests/test_ops.py`.
+  - **`calc/ops.py:11`** — fixed the pre-existing bug where `div` used `//` (integer division). It broke the existing `test_div` and `test_avg`, so the full suite couldn't pass without it.
+
