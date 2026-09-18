@@ -857,19 +857,29 @@ The first milestone is simpler:
 
 ### Current evidence
 
-A seven-round experimental study (synthetic benchmarks, zygote simulations,
-execve traces from 14 real agent sessions across Claude Code, Kimi CLI, and
-Codex CLI, an external review with errata, and equivalence-checked replays)
-is available in [experiments/REPORT.md](experiments/REPORT.md).
+A nine-round experimental study (synthetic benchmarks, zygote simulations,
+execve traces from 20 real agent sessions across Claude Code, Kimi CLI, and
+Codex CLI, an external review with errata, equivalence-checked replays, and
+task-level capacity A/B with full resident-cost accounting) is available in
+[experiments/REPORT.md](experiments/REPORT.md).
 Headline findings:
 
 * Agent session cost is task-type dependent: Python/Node runtime startup tax
   dominates analysis/test tasks (warm-fork cuts python command latency 3.2–7.5x
   with byte-identical output), while large-repo text pipelines (sort/xargs/wc)
-  need shared indexing instead.
-* Memory savings with full process-group accounting: -14% for 20 concurrent
-  import-heavy python workers (a -87% synthetic CoW upper bound applies only
-  to near-idle children).
+  need shared indexing instead. On **python-dense fixed-trace tasks** (round 9,
+  exp16): per-task CPU **-82%** including amortized daemon cost, task wall
+  P50 -58%, 0/432 step divergence; on git/cat-dense control tasks the net
+  saving is only 3–12% — the honest value for python-sparse workloads.
+* Memory (round 9, exp17, warm root included): fork+CoW beats independent
+  processes only above a **break-even of ~9 concurrently-sharing children**
+  per warm root; at 100 concurrent import-realistic workers: **-28%**
+  (1.28 GB → 924 MB), and 2x the docker-container footprint. Multiple venvs
+  (one root each) shift the break-even linearly.
+* Remaining warm-path time (round 9, exp18) is ~1ms fixed overhead
+  (fork+fd/env setup) plus user code that is almost entirely import time —
+  preloading cuts it up to 44x. End-to-end shim round trip adds a declared
+  ~3–4ms constant per call.
 * PTY overhead and memory/IO pressure were measured to be negligible on
   modern WSL2 — the original README diagnosis list is narrower in practice.
 
@@ -878,7 +888,7 @@ Headline findings:
 A working v0.1 lives in [athread/](athread/): `athreadd` (warm CPython root +
 fork broker) plus a transparent PATH shim with fail-open fallback. Held to a
 differential standard by [athread/parity_test.py](athread/parity_test.py)
-(24 cases asserting rc/stdout/stderr/side-effects identical to cold CPython).
+(33 cases asserting rc/stdout/stderr/side-effects identical to cold CPython).
 Measured end-to-end: `python -m unittest discover` 4.8x faster (34.2ms ->
 7.1ms), heavy-import `python -c` 3.6x, real-trace python p50 3.9x (exp15,
 sandbox-scoped), zero divergence on 450 replayable trace commands, correct
@@ -923,22 +933,32 @@ raw data: [experiments/REPORT.md](experiments/REPORT.md).
 | Real-trace replay (sandbox-scoped, exp15): python p50 | 41.6 ms | 10.8 ms | **3.9x** (n=3 replayable) |
 | 30 sparse sessions, python / unittest p50 | 22.2 / 34.9 ms | 6.9 / 7.9 ms | 3.2x / 4.4x |
 | Real-trace replay (exp15): 450 sandbox-scoped cmds | — | byte-identical (stderr+file trees) | zero divergence |
+| Task-level A/B (exp16), python-dense d10, per-task CPU incl. daemon | 0.391 s | 0.070 s | **-82%** (0/432 divergent) |
+| Task-level A/B (exp16), python-dense d10, task wall P50 | 466 ms | 195 ms | **-58%** |
+| Task-level A/B (exp16), git/cat-dense control, per-task CPU | 0.039 s | 0.037 s | -3~5% (honest control) |
 
 | Memory (full process group, incl. daemon) | Baseline | AThread | Saving |
 |---|---|---|---|
 | 20 concurrent import-heavy python procs | 129.5 MB | 111.6 MB | **-14%** |
+| 100 concurrent workers, single warm root (exp17) | 1281.8 MB | 923.7 MB | **-28%** |
+| Break-even (exp17): warm root pays for itself at | — | ~9 sharing children | below: net loss |
+| 100 workers in docker containers (cgroup usage) | — | 1870 MB | 2x warm / 1.5x cold |
 | Synthetic CoW upper bound (idle children) | 129.5 MB | 16.5 MB | -87% (upper bound only) |
 | Docker containers (10x python, docker stats) | — | 12.4 MB/instance | worse than bare metal |
 
 All rows verified for **output equivalence** (rc/stdout/stderr byte-identical
 to cold python; 33-case differential suite `athread/parity_test.py` plus
 exp15: 450/450 replayable sandbox-scoped trace commands byte-identical
-after declared normalization). Hit rate on real agent traces: 92% of
-python calls are shim-eligible, but python is only 2.4% of invocations in
-repo-analysis tasks — the benefit density is task-type dependent. Earlier
-headlines (21x replay, -36%/-89% memory, 585 execs) were **retracted** after
-an external review found measurement errors; see
-[experiments/REPORT.md](experiments/REPORT.md) round 7 for the full errata.
+after declared normalization, and exp16: 432/432 steps + 192/192 task
+trees across three arms). Hit rate on real agent traces: 86–92% of
+python calls are shim-eligible, but python is only 0–4% of invocations in
+repo-analysis/TDD tasks — the benefit density is task-type dependent, and
+the throughput gain at fixed think-delays is +7–9% (delay-bound), below the
++20% gate. Memory saving is conditional on ≥~9 concurrent children sharing
+one warm root. Earlier headlines (21x replay, -36%/-89% memory, 585 execs)
+were **retracted** after an external review found measurement errors; see
+[experiments/REPORT.md](experiments/REPORT.md) rounds 7–9 for the full
+errata and the corrected measurements.
 
 ---
 

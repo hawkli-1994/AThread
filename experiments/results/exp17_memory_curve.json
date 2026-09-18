@@ -1,0 +1,58 @@
+[
+ {
+  "tier": 1,
+  "cold_mb": 13.6,
+  "warm_1env_mb": 20.4,
+  "save_1env_mb": -6.8,
+  "save_1env_pct": -50.1,
+  "warm_2env_mb": 30.6,
+  "save_2env_mb": -17.1,
+  "save_2env_pct": -125.9,
+  "warm_4env_mb": 50.9,
+  "save_4env_mb": -37.4,
+  "save_4env_pct": -275.6,
+  "docker_mb": 19.1
+ },
+ {
+  "tier": 5,
+  "cold_mb": 66.7,
+  "warm_1env_mb": 57.6,
+  "save_1env_mb": 9.1,
+  "save_1env_pct": 13.7,
+  "warm_2env_mb": 67.8,
+  "save_2env_mb": -1.1,
+  "save_2env_pct": -1.6,
+  "warm_4env_mb": 87.6,
+  "save_4env_mb": -20.9,
+  "save_4env_pct": -31.3,
+  "docker_mb": 94.4
+ },
+ {
+  "tier": 20,
+  "cold_mb": 260.2,
+  "warm_1env_mb": 194.9,
+  "save_1env_mb": 65.3,
+  "save_1env_pct": 25.1,
+  "warm_2env_mb": 204.2,
+  "save_2env_mb": 56.0,
+  "save_2env_pct": 21.5,
+  "warm_4env_mb": 224.2,
+  "save_4env_mb": 36.0,
+  "save_4env_pct": 13.8,
+  "docker_mb": 374.8
+ },
+ {
+  "tier": 100,
+  "cold_mb": 1281.8,
+  "warm_1env_mb": 923.7,
+  "save_1env_mb": 358.1,
+  "save_1env_pct": 27.9,
+  "warm_2env_mb": 926.6,
+  "save_2env_mb": 355.1,
+  "save_2env_pct": 27.7,
+  "warm_4env_mb": 948.9,
+  "save_4env_mb": 332.9,
+  "save_4env_pct": 26.0,
+  "docker_mb": 1870.0
+ }
+]

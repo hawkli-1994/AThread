@@ -34,6 +34,20 @@ DEFAULT_WARM = [
 started_at = time.time()
 served = 0
 
+# P2 phase instrumentation: off unless ATHREAD_TIMING points at a log path.
+# Each record is one JSON line: {"ts": ns, "ev": name, "pid": child_pid, ...}
+TIMING = os.environ.get("ATHREAD_TIMING")
+
+def tlog(ev, **kw):
+    if not TIMING:
+        return
+    try:
+        with open(TIMING, "a") as f:
+            f.write(json.dumps({"ts": time.monotonic_ns(), "ev": ev,
+                                "pid": os.getpid(), **kw}) + "\n")
+    except Exception:
+        pass
+
 
 def log(msg):
     line = f"[{time.strftime('%H:%M:%S')}] {msg}\n"
@@ -77,6 +91,7 @@ def close_fds():
 def child_run(req, fds):
     """Runs in the forked child. Never returns."""
     rc = 1
+    t0 = time.monotonic_ns()
     try:
         for i, fd in enumerate(fds):
             os.dup2(fd, i)
@@ -91,8 +106,10 @@ def child_run(req, fds):
         for kv in req["env"]:
             k, _, v = kv.partition("=")
             os.environ[k] = v
+        tlog("setup_done", dt=time.monotonic_ns() - t0)
         argv = req["argv"]
         import runpy, types
+        tlog("pre_exec", dt=time.monotonic_ns() - t0)
         a = argv[1:]
         mode = "stdin"
         tb_filter_runpy = False
@@ -220,6 +237,7 @@ def child_run(req, fds):
         except Exception:
             pass
         rc = 1
+    tlog("user_done", dt=time.monotonic_ns() - t0)
     # mimic interpreter shutdown: run atexit handlers (registered in this
     # child only), then flush stdio. os._exit still skips the rest of
     # Py_Finalize, which is deliberate — finalizing a forked interpreter is
@@ -234,6 +252,7 @@ def child_run(req, fds):
         sys.stderr.flush()
     except Exception:
         pass
+    tlog("exit_done", dt=time.monotonic_ns() - t0)
     os._exit(rc)
 
 
@@ -347,6 +366,8 @@ def serve(warm_mods):
                     except Exception:
                         pass
                 continue
+            if req.get("cmd") == "run":
+                tlog("req")
 
             if req.get("cmd") == "status":
                 conn.sendall((json.dumps({
@@ -385,11 +406,13 @@ def serve(warm_mods):
                         pass
                 continue
 
+            t_req = time.monotonic_ns()
             pid = os.fork()
             if pid == 0:
                 srv.close()
                 child_run(req, fds)
                 os._exit(125)
+            tlog("fork", dt=time.monotonic_ns() - t_req, child=pid)
             for fd in fds:
                 try:
                     os.close(fd)

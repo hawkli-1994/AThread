@@ -494,3 +494,85 @@ Issue #1 要求"在扩大 Node/共享索引/调度之前，先完成一轮可复
 2. 真实轨迹级 CPU 收益接近 0（exp15 严格口径 -0%）与这个低占比一致——第七轮"机器级收益"的叙事只在**高 python 密度场景**（大型测试套件反复跑、批量数据分析流水线）成立。
 3. 这正面回应了 Issue 的"适用边界"问题：**AThread v0.1 的支持场景是"高频、短时、重 import 的 python 调用"，而当前 agent 行为模式下这类调用密度天然低**。要把项目推过投入门槛（CPU -15%/吞吐 +20%），要么等真实 workload 里出现高 python 密度任务（大测试套件），要么把目标转向"让 agent 更敢跑测试"（验证成本降 4x 后，Claude 式"不验证就交付"的行为可能改变——这是行为层面的收益，本实验无法测量）。
 4. 样本仍小（6 新会话 × 2 任务 × 小仓库，测试 33–58ms 本就不需要循环）。更大仓库/更长会话可能反转——issue 建议的 30–50 会话分层采集继续有效，值得做。
+
+
+---
+
+# 第九轮（2026-09-18）：Issue #1 —— P1-B 任务级收益、P1-C 内存盈亏、P2 阶段拆解
+
+第八轮 P1-A 发现"真实会话 python 占比 0–4%"后，issue #1 的下一步不是放弃，而是把问题拆成三个可判定的问题：**B. 在 python 密集任务上，任务级净收益（含 daemon 常驻开销）能否过门槛？C. 内存收益随并发数的盈亏平衡点在哪、多环境会不会吃掉收益？2. 剩余耗时都花在哪、预热到底贡献多少？** 本轮三个实验分别回答。
+
+## P1-B exp16：固定轨迹任务级容量 A/B（三臂，6 批轮换）
+
+设计（对应 issue P1-B 逐条要求）：
+- **固定轨迹 + python 密度可调**：`pydense` 任务 = git status/log + 读文件 + N×[sed 编辑 + `python3 -m unittest discover`]（模拟测试循环会话）；`shelldense` 是**声明的不受益对照**（git/cat/grep/wc/find/sort 共 10 条命令 + 恰好 1 条 python），防止挑任务。N∈{1,10} 分档报告。
+- **三臂**：`cold`（干净 PATH，无 shim 无 daemon）；`forkonly`（daemon 但**空 warm_modules**，只 fork+CoW 不预载——隔离"fork 避解释器启动"与"模块预载"的贡献）；`full`（33 模块 DEFAULT_WARM，即 AThread fast path）。暖臂走真实 shim，**含产品自身分发成本**；daemon 每次臂运行经 `ATHREAD_STATE_DIR` 全新启动，启动 CPU 从 /proc 读取并**摊入每任务**。
+- **6 批轮换**：每批内臂顺序轮转（cold,forkonly,full）→（forkonly,full,cold）→…，臂间串行（无交叉 CPU 干扰），每臂每批 8 任务并发 8。
+- **CPU**：per-command wait4 rusage 求和（第八轮验证过的口径）；**CI**：批级均值 ±95%（n=6 批）。
+- **等价**：432 步 × 3 臂逐字节比较（rc + NORM 后 stdout/stderr，同第八轮声明规则）+ 192 个任务工作区终态树 sha256。
+
+### 结果（`results/exp16_task_ab.txt`，原始数据 `exp16_raw_stripped.json`）
+
+| 任务 | 臂 | 每任务 CPU | 任务墙钟 P50/P95 | 吞吐 | 失败 |
+|---|---|---|---|---|---|
+| pydense d10 | cold | 0.391s ±0.004 | 466/484ms | 2.203 t/s | 0/48 |
+| | forkonly | 0.057s+0.011s daemon | 247/252ms | 2.355 t/s | 0/48 |
+| | full | 0.056s+0.014s daemon | **195/201ms** | 2.393 t/s | 0/48 |
+| pydense d1 | cold | 0.055s | 76/81ms | 4.268 t/s | 0/48 |
+| | full | 0.022s+0.006s daemon | 49/50ms | 4.584 t/s | 0/48 |
+| shelldense（对照） | cold | 0.039s | 72/82ms | 3.792 t/s | 0/48 |
+| | full | 0.032s+0.006s daemon | 66/67ms | 3.838 t/s | 0/48 |
+
+**等价性：432 步 0 分歧；192 任务树全部一致；0 任务失败。**
+
+关键读数：
+1. **pydense d10 每任务 CPU 节省 82.6%/82.1%（含摊入 daemon）**——是 issue 门槛（-15%）的 5 倍。单步看：python 调用墙钟 p50 36.4→15.8ms（forkonly）→10.6ms（full）。任务墙钟 P50 -58%（466→195ms）。
+2. **吞吐只 +7~9%**：任务墙钟被固定的 80ms/步思考延迟垫底（25 步 ≈ 2s 地板），8 并发下 CPU 节省 translate 不成吞吐。声明：吞吐收益在"延迟受限"负载上天然有界，**CPU 门槛达成，吞吐门槛（+20%）在本负载未达成**——要让吞吐兑现，需要提高并发（更多会话共享 20 核）或减少步间延迟，两者都是真实 agent 部署的方向，但本轮未测。
+3. **forkonly ≈ full（cmd-cpu 446 vs 451ms）**：对本工作负载规模，收益几乎全来自"fork 避免解释器冷启动"；模块预载的额外贡献 ≈5ms/步（36.4→10.6 中 15.8→10.6 的部分）。预载价值随 import 重量增长（见 exp18 import-heavy：10.3→0.3ms）。
+4. **对照组诚实结果**：shelldense 上 full 节省仅 2.8–4.8%（CPU）/ 0.7–1.3%（吞吐）——这就是"任务里几乎没有 python 时"的净收益真值，与 P1-A 的 0–4% 占比互相印证。**AThread 对非 python 任务无负收益**（shim 开销在噪声内）。
+
+## P1-C exp17：内存盈亏曲线（v2，1/5/20/100 档 × 1/2/4 环境 + docker）
+
+**方法修正（重要）**：v1 实现有一个方法论 bug——"暖臂子进程"实际是**驱动进程 fork 出来的**，不是 warm root 的子进程，CoW 共享对象是驱动而非 root，v1 的负收益结果**作废**（留存于 git 历史，不回删）。v2 改为**真实 daemon+shim**：athreadd 预载模块集并从 warm root fork 每个子进程（生产同款机制），子进程跑与冷臂完全相同的代码（unittest/json/argparse/tempfile import + 3k 条 JSON round-trip + 2MB 触碰缓冲），存活 12s、第 6s 测量；PSS 求和**含 root 本体**。
+
+### 结果（`results/exp17_memory_curve.txt`）
+
+| 档 | cold | warm/1env | warm/2env | warm/4env | docker（cgroup） |
+|---|---|---|---|---|---|
+| 1 | 13.6 | 20.4（**-50%**） | 30.6 | 50.9 | 18.8 |
+| 5 | 66.7 | 57.6（+13.7%） | 67.8 | 87.6 | 94.3 |
+| 20 | 260.2 | 194.9（+25.1%） | 204.2 | 224.2 | 374.8 |
+| 100 | 1281.8 | 923.7（**+27.9%，省 358MB**） | 926.6 | 948.9 | **1870.0** |
+
+- **盈亏平衡 ≈ 9 个并发共享子进程**（33 模块 root 空闲 PSS 16.2MB ÷ 每子进程节省 1.82MB）。低于此数暖臂反而费内存——单会话/低并发部署不该开 warm root。
+- **多环境**：root 成本随环境数线性（每 venv 一个 root），但子进程只与本 root 池共享；100 档时 4 环境仍有 +26%（root 已被摊薄），5 档时 4 环境 -31%（不划算）。**并发越高、环境越集中，warm 越赚**。
+- **docker**：~18.8MB/实例线性增长（cgroup 口径，含容器开销，与 PSS 不可直接比）——容器不做运行时初始化去重，100 档约 1.88GB，是同档 warm/1env（924MB）的 2 倍。与第五轮结论一致。
+- docker 100 档首轮统计为 0：100 个容器串行启动的偏斜（~60s）超过了子进程 12s 的生命期，先启动者测量前已退出。修正（生命期 120s + 全部 Running 后再测）得 **1870.0MB**（~18.7MB/容器），与 20 档线性外推一致；脚本已修复该时序 bug。
+
+## P2 exp18：fast path 阶段耗时拆解 + 预热消融
+
+daemon 加 `ATHREAD_TIMING` 插桩（默认关闭，不影响生产路径；插桩后 parity **33/33 仍全过**），子进程内打 5 个时间点，电池 5 种命令 × 50 次 × {forkonly, full} + cold 基线（`results/exp18_phase_breakdown.txt`，p50 ms）：
+
+| 命令 | 阶段（full 臂） | forkonly 的 user | cold 墙钟 | warm/cold |
+|---|---|---|---|---|
+| trivial `-c pass` | setup 0.53 + dispatch 0.09 + user 0.11 | 0.11 | 9.3 | 0.42x |
+| unittest-discover | user **4.16** | 7.45 | 35.6 | 0.25x |
+| script.py（import unittest,json） | user **0.42** | 5.79 | 31.0 | 0.15x |
+| import-heavy（10 模块） | user **0.23** | 10.10 | 39.4 | 0.11x |
+
+读数：
+1. **固定开销 ≈1ms/调用**（ipc+fork 0.2–0.5 + setup 0.6 + dispatch 0.13），相对冷启动 12–42ms 可忽略。
+2. **user_code 是唯一的大头，且几乎全部是可预载的 import**：预载把 import-heavy 的 10.1ms 打到 0.23ms（44x），unittest-discover 7.5→4.2ms（剩余 5ms 是测试发现+执行本体）。**预热策略的收益上界 = 子进程 import 时间，import 越重越赚**——这给出 warm_modules.txt 的选择标准：按目标负载的真实 import profile 配，而不是越多越好（每多预载一个模块，root 常驻 +~0.3MB，盈亏平衡点右移）。
+3. dispatch 阶段也暴露预载差异：forkonly ~1.1ms vs full ~0.1ms——`runpy` 模块本身在 full 的 warm root 里已导入。
+4. **诚实的开销声明**：wall 与 child_total 之间有 ~3–4ms 客户端往返（shim connect + SCM_RIGHTS + 等 exit 事件），这是端到端"每次 python 调用 0.6ms"叙事必须扣掉的常数；即便计入，端到端仍是 2.5–7x。
+
+## 本轮总结：门槛判定与下一步
+
+| issue #1 门槛 | 判定 | 证据 |
+|---|---|---|
+| 目标场景每成功任务 CPU -15% | **达成**（python 密集：-50%~-82%，含 daemon 摊销；等价性 432/432） | exp16 |
+| 固定延迟下吞吐 +20% | **未达成**（+7~9%，延迟受限负载有界） | exp16 |
+| 结果等价、错误率不增 | 达成（0 分歧 / 0 失败 / parity 33/33） | exp16/exp18 |
+| 内存盈亏 | **有条件达成**：≥9 并发共享且环境集中时净省 14–28%；低并发或多 venv 摊薄前为负 | exp17 |
+
+三个实验合起来的图景：**AThread v0.1 的技术收益是真实且可复现的（等价性背书），但它的价值面比"Agent 运行时"窄——它是一个"python 高频调用加速器"，盈亏由（并发数 × python 密度 × import 重量 ÷ 环境分散度）四个变量决定**。P1-A 显示当前 agent 行为模式下前两个变量天然低；exp16/17/18 显示当它们高时收益巨大且开销诚实。下一步优先级：① 在真实大仓库（测试套件秒级）上采 1 个高 python 密度 trace，验证自然密度下能否复现 exp16 d10；② shim 并发往返优化（3–5ms 客户端常数在 10ms 级调用上是最大可优化项）；③ 多 venv root 共享（site-packages 白名单）缓解环境分散度。

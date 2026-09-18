@@ -1,0 +1,25 @@
+== exp17: memory break-even curve v2 ==
+children forked from warm roots via real daemon+shim; PSS summed over roots+children (roots INCLUDED)
+children held alive 12s, measured at 6s; each child: unittest/json/argparse/tempfile imports + 3k-record JSON round-trip + 2MB touched buffer
+
+tier |   cold | warm/1env | warm/2env | warm/4env | docker(cgroup)
+   1 |   13.6 |      20.4 |      30.6 |      50.9 |      18.8
+   5 |   66.7 |      57.6 |      67.8 |      87.6 |      94.3
+  20 |  260.2 |     194.9 |     204.2 |     224.2 |     375.5
+ 100 | 1281.8 |     923.7 |     926.6 |     948.9 |       0.0
+
+-- saving vs cold --
+tier   1: 1env   -6.8MB ( -50.1%)  2env  -17.1MB (-125.9%)  4env  -37.4MB (-275.6%)
+tier   5: 1env    9.1MB (  13.7%)  2env   -1.1MB (  -1.6%)  4env  -20.9MB ( -31.3%)
+tier  20: 1env   65.3MB (  25.1%)  2env   56.0MB (  21.5%)  4env   36.0MB (  13.8%)
+tier 100: 1env  358.1MB (  27.9%)  2env  355.1MB (  27.7%)  4env  332.9MB (  26.0%)
+
+full 33-module warm root idle PSS: 16.2 MB
+per-child saving at tier 5 (1 env): 1.82 MB
+memory break-even (1 env): one warm root pays for itself at ~8.9 concurrently-sharing children
+multi-env: cost scales linearly with #roots (k x idle root); children only share within their own root's pool
+docker: cgroup usage incl. container overhead; NOT PSS-comparable
+
+[correction] docker tier-100 arm: first attempts measured 0 because
+container startup skew exceeded the child's 12s lifetime; rerun with
+120s lifetime + measure-after-all-running gives 1870.0 MB (~18.7/container).
